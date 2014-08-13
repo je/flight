@@ -1,0 +1,101 @@
+{% extends "flight/airplane_list.html" %}
+
+{% block title %}
+<title>{% if userform or permform %}Airplane Permissions{% elif object %}Editing Airplane {{ object.name }}{% else %}New Airplane{% endif %}</title>
+{% endblock %} 
+
+{% block content %}
+{% load humanize %}
+{% with object as airplane %}
+<script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script> 
+<div class="row">
+	<br>
+ 	<div class="row col-lg-12 col-md-12 col-sm-12">
+   	<form class="well form-horizontal col-lg-12 col-md-12 col-sm-12" method="POST" enctype="multipart/form-data" action="{% if userform or permform %}{% url 'flight-airplane-permissions' airplane.tail airplane.name %}{% elif airplane %}{% url 'flight-airplane-edit' airplane.tail airplane.name %}{% elif airbase %}{% url 'flight-airbase-airplane-add' airbase.tla %}{% else %}{% url 'flight-airplane-add' %}{% endif %}">
+
+    	<legend>{% if permform %}Request permission on <quiet>Airplane</quiet> {{ airplane.name }} (<a href="{% url 'flight-airplane-detail' airplane.tail airplane.name %}">{{ airplane.name }}</a>){% else %}{% if airplane %}Editing{% if userform %} permissions on{% endif %} <quiet>Airplane</quiet> <a href="{% url 'flight-airplane-detail' airplane.tail airplane.name %}">{{ airplane.name }}</a>{% else %}New Airplane {% if airbase %}for <quiet>Airbase</quiet> {{ airbase.name }} (<a href="{% url 'flight-airbase-detail' airbase.tla %}">{{ airbase.tla }}</a>){% endif %}{% endif %}{% endif %}
+        <span class='pull-right'>
+        <button type="submit" class="btn btn-sm btn-primary"><i class="glyphicon glyphicon-ok glyphicon-white"></i> {% if permform %}Send Request{% elif userform %}Save Permissions{% elif airplane %}Save Airplane{% else %}Create Airplane{% endif %}</button>
+        <a class="btn btn-sm btn-default" href="{% if airplane %}{% url 'flight-airplane-detail' airplane.tail airplane.name %}{% else %}{% if airbase %}{% url 'flight-airbase-detail' airbase.tla %}{% else %}{% url 'flight-airplane-list' %}{% endif %}{% endif %}">Cancel</a>
+        {% if userform or permform %}{% elif airplane %}<a class="btn btn-sm btn-danger" href="{% url 'flight-airplane-delete' airplane.tail airplane.name %}"><i class="glyphicon glyphicon-remove glyphicon-white"></i> Delete</a>{% endif %}
+        </span>
+    	</legend>
+		{% if permform %}
+    	<h5><quiet>This will notify the airplane's Airbase Manager, <a href="/user/{{ airplane.adminbase.manager.username }}/">{{ airplane.adminbase.manager.first_name }} {{ airplane.adminbase.manager.last_name }}</a>, who can give you permissions on the airplane.</quiet></h5>
+    	{% for field in permform %}    	
+		<div class="form-group{% if field.errors %} has-error{% endif %}">
+		{{ field }}
+		{% if field.errors %}{% for error in field.errors %}
+			<span class="help-inline">{{ error|escape }}</span>
+		{% endfor %}{% endif %}
+		</div>
+		{% endfor %}
+		{% elif userform %}
+		<h5>Select users below to add them to the airplane user list. These users can do everything you can, e.g. delete the airplane and all of its flight data. Discretion strongly advised.</h5>
+    	{% for field in userform %}    	
+		<div class="form-group{% if field.errors %} has-error{% endif %}">
+		{{ field }}
+		{% if field.errors %}{% for error in field.errors %}
+			<span class="help-inline">{{ error|escape }}</span>
+		{% endfor %}{% endif %}
+		</div>
+		{% endfor %}
+		{% else %}
+		{% if form.non_field_errors %}{% for error in form.non_field_errors %}
+		<div class="alert alert-danger">
+		{{ error|escape }}
+		</div>
+		{% endfor %}{% endif %}
+		{% for field in form %}
+		{% ifequal field.name 'geom' %}
+		<div class="row col-lg-12 col-md-12 col-sm-12">   
+		<div class="form-group{% if field.errors %} has-error{% endif %}">
+		<label class="control-label col-lg-1 col-md-1 col-sm-1" for="{{ field.name }}">{{ field.label }}</label>
+		<div class="col-lg-10 col-md-10 col-sm-10">
+			{{ field }}
+        </div>
+		{% if field.errors %}{% for error in field.errors %}
+			<span class="help-inline help-block col-lg-8 col-lg-offset-1 col-md-8 col-md-offset-1 col-sm-8 col-sm-offset-2">{{ error|escape }}</span>
+		{% endfor %}{% endif %}
+		</div>
+		</div>
+		{% else %}
+		<div class="row col-lg-6 col-md-6 col-sm-6">   
+		<div class="form-group{% if field.errors %} has-error{% endif %}">
+		<label class="control-label col-lg-2 col-md-2 col-sm-2" for="{{ field.name }}">{{ field.label }}</label>
+		<div class="col-lg-8 col-md-8 col-sm-8">
+			{{ field }}
+        </div>   
+		{% if field.errors %}{% for error in field.errors %}
+			<div class="help-inline help-block col-lg-12 col-md-12 col-sm-12 col-lg-offset-2 col-md-offset-2 col-sm-offset-2">{{ error|escape }}</div>
+		{% endfor %}{% endif %}
+		</div>
+		</div>
+		{% endifequal %}
+		{% endfor %}
+		{% endif %}
+		{% csrf_token %}
+	</form>
+ </div>
+ </div>
+{% endwith %}
+{% endblock %}
+
+{% block endscripts %}
+<link href='/static/datepicker/datepicker.css' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="/static/b-3.0.3/js/bootstrap.min.js"></script>
+<script src="/static/datepicker/bootstrap-datepicker.js"></script>
+<script>
+	$(function(){
+		$('#id_begins_0').datepicker({
+			format: 'yyyy-mm-dd',
+			autoclose: 'True'
+		});
+		$('#id_ends_0').datepicker({
+			format: 'yyyy-mm-dd',
+			autoclose: 'True'
+		});
+	});
+</script>
+{% endblock %}

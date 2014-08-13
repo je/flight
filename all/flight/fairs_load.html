@@ -1,0 +1,75 @@
+{% extends "flight/fairs.html" %}
+ 
+{% block extrahead %} 
+<style type="text/css">
+.square {
+    display: inline-block;
+    height: 12px;
+    width: 12px;
+}
+
+.green {
+    background-color: green;
+}
+
+.blue {
+    background-color: blue;
+}
+
+.red {
+    background-color: red;
+}
+
+.orange {
+    background-color: orange;
+}
+
+.cyan {
+    background-color: cyan;
+}
+
+.magenta {
+    background-color: magenta;
+}
+
+.black {
+    background-color: black;
+}
+
+quiet {color:#666;}
+calculated {color:#FF8C00;}
+</style>
+{% endblock %}
+
+{% block pagetitle %}
+{% endblock %}
+
+{% block content %}
+<script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script> 
+<div class="row">
+	<br>
+ 	<div class="col-lg-12 col-md-12 col-sm-12">
+    <form class="well" method="POST" enctype="multipart/form-data" action="{% if themodel %}{% else %}{% url 'flight-fairs-load' table %}{% endif %}">
+
+        <legend>{% if themodel %}Adding <a href="{% url 'flight-fairs' %}">{% if themodel.plural %}{{ themodel.plural }}{% else %}{{ themodel.name }}s{% endif %}</a>{% else %}Adding a Model{% endif %} <span class='pull-right'><button type="submit" class="btn btn-xs btn-primary">{% if themodel %}<i class="glyphicon glyphicon-upload glyphicon-white"></i> Upload data{% else %}<i class="glyphicon glyphicon-ok glyphicon-white"></i> Create model{% endif %}</button>
+            <a class="btn btn-xs btn-default" href="{% if themodel %}{% url 'flight-fairs' %}{% else %}{% url 'flight-fairs' %}{% endif %}">Cancel</a></span>
+        <br />
+        Your CSV will be imported in the order specified by the {{ themodel.name }} model:
+        <pre>"geom", "name"{% for field in themodel.field_list %}{% ifequal forloop.counter 1 %}{% ifequal field.index 1 %}, "{{ field }}"{% else %}, ""{% endifequal %}{% endifequal %}{% ifequal forloop.counter 2 %}{% ifequal field.index 2 %}, "{{ field }}"{% else %}, ""{% endifequal %}{% endifequal %}{% ifequal forloop.counter 3 %}{% ifequal field.index 3 %}, "{{ field }}"{% else %}, ""{% endifequal %}{% endifequal %}{% if forloop.counter > 3 %}, "{{ field }}"{% endif %}{% endfor %}</pre>
+        </legend>
+
+        {% for field in form %}
+        <div class="{% if field.errors %} error{% endif %}">
+        {% if field.errors %}{% for error in field.errors %}
+            <span class="help-inline">{{ error|escape }}</span>
+        {% endfor %}{% endif %}
+        </div>
+        <div class="controls">{{ field }}
+        </div>
+        {% endfor %}
+        {% csrf_token %}
+    </form>
+    </div>
+ </div>
+
+{% endblock %}

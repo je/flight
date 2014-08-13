@@ -1,0 +1,428 @@
+{% extends "base-b2.html" %}
+ 
+{% block title %}
+<title>FLiGHT</title>
+{% endblock %} 
+
+{% block extrahead %}
+<link href='//fonts.googleapis.com/css?family=Carter+One' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="/static/font-awesome/css/font-awesome.min.css">
+<link href="/static/one-page-wonder.css" rel="stylesheet">
+<style type="text/css">
+styled {font-family: 'Carter One', cursive;}
+
+quiet {color:#666;} /* grey */
+ccalculated {color:#8B0000;} /* DarkRed */
+dcalculated {color:#006400;} /* DarkGreen */
+tcalculated {color:#8B0000; width:50px; margin-right:auto; text-align:right;}
+tm {width:50px; float:right; margin-right:auto; text-align:right;}
+rt {width:60px; float:right; margin-right:auto; text-align:right;}
+lt {width:60px; margin-right:auto; text-align:right;}
+label.text {cursor: text;}
+span.lt {width:90px;}
+unk {color:white;background-color:black;} /* white on black */
+td.plane {width:100px;}
+td.date {width:80px;}
+td.ex {background-color:white;border-left:thick solid #FF4500;}
+td.total {background-color:white;border-top:thick solid;text-align:right;}
+td.number {text-align:right;}
+td.blank {background-color:white;}
+tr.zg {background-color: #f9f9f9;} /* zebra */
+tr.zb {background-color: #F0F8FF;} /* zebra */
+dogreen {color:#556B2F;} /* DarkOliveGreen */
+fgreen {color:#228B22;} /* ForestGreen */
+ored {color:#FF4500;} /* OrangeRed */
+/* a:visited {color:#4B0082;}  Indigo */
+#id_effectivedate_0 {width:80px;}
+#id_effectivedate_1 {width:50px; margin-left:5px;}
+#id_dailyavailstart_0 {display:none;}
+#xid_dailyavailstop_0 {display:none;}
+#xid_nonavailstart_0 {display:none;}
+#xid_nonavailstop_0 {display:none;}
+#id_planestart_0 {display:none;}
+#id_planestop_0 {display:none;}
+
+
+table.s .tablesorter-header {
+  cursor: pointer;
+}
+table.s .tablesorter-header:after {
+  content: "";
+  float: right;
+  margin-top: 7px;
+  border-width: 0 4px 4px;
+  border-style: solid;
+  border-color: #000000 transparent;
+  visibility: hidden;
+}
+table.s .tablesorter-headerSortUp, table.s .tablesorter-headerSortDown {
+  background-color: #f7f7f9;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+}
+table.s .tablesorter-header:hover:after {
+  visibility: visible;
+}
+table.s .tablesorter-headerSortDown:after, table.s .tablesorter-headerSortDown:hover:after {
+  visibility: visible;
+  filter: alpha(opacity=60);
+  -moz-opacity: 0.6;
+  opacity: 0.6;
+}
+table.s .tablesorter-headerSortUp:after {
+  border-bottom: none;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid #000000;
+  visibility: visible;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  filter: alpha(opacity=60);
+  -moz-opacity: 0.6;
+  opacity: 0.6;background-color:white;border-top:thick solid;
+}
+
+    img.olTileImage {
+        max-width: none;
+    }
+
+    .olLayerGooglePoweredBy {
+      display: none;
+    }
+
+@media print {
+      .visible-print  { display: inherit !important; }
+      .hidden-print   { display: none !important; }
+      a:link:after, a:visited:after {
+        content: "";
+      }
+    }
+</style>
+
+
+{% endblock %}
+
+{% block favico %} 
+    <link rel="shortcut icon" href="/static/glyphicons/glyphicons_038_airplane.png">
+{% endblock %}
+
+{% block brand %}
+<a class="brand" href="{% url 'flight-index' %}"><strong><styled>FLiGHT</styled></strong></a>
+{% endblock %}
+
+{% block nav %} 
+{% if u %}
+  <li class="dropdown hidden-print"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Airbases <b class="caret"></b></a>
+    <ul class="dropdown-menu nav-stacked">
+    <li><a href="{% url 'flight-airbase-list' %}">All airbases</a></li>
+    {% if u.airbases %}
+    {% for b in u.airbases %}
+    <li><a href="/flight/airbase/{{ b }}/">{{ b.name  }} ({{ b }})</a></li>
+    {% endfor %}
+    {% endif %}
+    <li class="divider"></li>
+    <li><a href="{% url 'flight-airbase-add' %}">Add an airbase</a></li>
+    <li class="divider"></li><li><a href="{% url 'flight-lfee-list' %}">Landing fees</a></li>
+    <li><a href="{% url 'flight-rfee-list' %}">Retardant prices</a></li>
+    </ul>
+  </li>
+  <li class="dropdown hidden-print"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Airplanes <b class="caret"></b></a>
+    <ul class="dropdown-menu nav-stacked">
+    <li><a href="{% url 'flight-airplane-list' %}">All airplanes</a></li>
+    {% if u.airplanes %}
+    {% for a in u.airplanes %}
+    <li><a href="/flight/airplane/{{ a.tail }}/{{ a.name }}">{{ a }}</a></li>
+    {% endfor %}
+    {% endif %}
+    <li class="divider"></li>
+    <li><a href="{% url 'flight-airplane-add' %}">Add an airplane</a></li>
+    <li class="divider"></li>
+    <li><a href="{% url 'flight-contract-list' %}">Contracts</a></li>
+    <li><a href="{% url 'flight-rate-list' %}">Clock rates</a></li>
+    </ul>
+  </li>
+  <li class="dropdown hidden-print"><a class="dropdown-toggle" data-toggle="dropdown" href="#">People <b class="caret"></b></a>
+    <ul class="dropdown-menu nav-stacked">
+    <li><a href="{% url 'flight-person-list' %}">All people</a></li>
+    {% if u.people %}
+    {% for p in u.people %}
+    <li><a href="/flight/person/{{ p.firstname }} {{ p.lastname }}/">{{ p.firstname }} {{ p.lastname }}</a></li>
+    {% endfor %}
+    {% endif %}
+    <li class="divider"></li>
+    <li><a href="{% url 'flight-person-add' %}">Add a person</a></li>
+    </ul>
+  </li>
+  <li class="dropdown hidden-print"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Incidents <b class="caret"></b></a>
+    <ul class="dropdown-menu nav-stacked">
+    <li><a href="{% url 'flight-incident-list' %}">All incidents</a></li>
+    {% if u.incidents %}
+    {% for i in u.incidents %}
+    <li><a href="/flight/incident/{{ i }}/">{{ i }}</a></li>
+    {% endfor %}
+    {% endif %}
+    <li class="divider"></li>
+    <li><a href="{% url 'flight-incident-add' %}">Add an incident</a></li>
+    </ul>
+  </li>
+{% endif %}
+{% endblock %}
+
+{% block navuser %}
+<span class="navbar-text pull-right hidden-print">
+{% if user.is_authenticated %}
+<div>
+	<a href="/flight/user/" style="text-decoration:none;color:rgb(102, 102, 102);">User</a> <a href="/flight/user/{{ user.username }}/">{% if user.last_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</a> is logged in. <a href="/users/logout/?next={% url 'flight-index' %}">Logout</a>.
+</div>
+{% else %}
+<div>
+	You are not logged in. <a href="/users/login/?next={% url 'flight-index' %}">Login</a> or <a href="/users/register/">Register</a>.
+</div>
+{% endif %}
+</span>
+{% endblock %}
+
+{% block pagetitle %}
+{% endblock %}
+
+{% block content %}
+{% load humanize %}
+{% if not u %}
+<br />
+
+<!-- START THE FEATURETTES -->
+<div>
+
+<div class="featurette" id="one" style="max-width:600px;">
+<h3 class="featurette-heading">In a World of 'Whys'</h3>
+<h3><quiet><styled>FLiGHT</styled> solves for X</quiet></h3>
+<p class="lead">How? Mostly, it's a database of aircraft operations, retardant use, and associated costs. These data are processed and aggregated into various products that will answer your questions, or keep others from asking you for answers.</p>
+</div>
+
+<hr class="featurette-divider">
+
+<div class="featurette" id="two" style="max-width:600px;">
+<h3 class="featurette-heading">When Danger Looms</h3>
+<h3><quiet><styled>FLiGHT</styled> is everywhere at once</quiet></h3>
+<p class="lead">Unilke yesterday's software, <styled>FLiGHT</styled> has no clunky downloads, messy installers, or wasteful packaging. It's on the actual internet so we can all work together better. And <styled>FLiGHT</styled> is free as in cheap: No hidden charges or monthly fees, no salesmen will call.</p>
+</div>
+
+<hr class="featurette-divider">
+
+<div class="featurette" id="three" style="max-width:600px;">
+<h3 class="featurette-heading">Getting Started?</h3>
+<h3><quiet><styled>FLiGHT</styled> could be easier than you think</quiet></h3>
+<p class="lead">If you are an airbase manager or affiliate and want to use <styled>FLiGHT</styled>, <a href='/users/register/'>register for a user account</a> and email <a>xx@xxxx.xxx</a> so we know you aren't just some nodbody from the internet. Include your airbase details and we'll make sure you have write permissions at your airbases. Thanks!</p>
+</div>
+
+</div>
+<!-- /END THE FEATURETTES -->
+
+</div>
+
+</div>
+{% else%}
+
+{% with u as person %}
+{% if u.logitems %}
+<div class='span5'>
+<h3>{% if u.logitems %}<span class='ccalculated'>{{ u.logitems|length }}</span> Action{{ u.logitems|length|pluralize }}{% else %}<span class='ccalculated'>0</span> Actions{% endif %}</h3>
+<h5><quiet>Entries from some logfile.</quiet></h5>
+<div>
+ <table class="table table-bordered table-condensed table-hover table-striped">
+    <thead>
+	<th>Log entry and timestamp</th>
+    </thead>
+	<tbody>
+{% for item in u.logitems %}
+	<tr>
+		<td>{{ item.message }} <quiet>{{ item.created|timesince }} ago</quiet></td>
+
+	</tr>
+{% endfor %}
+	</tbody>
+</table>
+</div>
+{% endif %}
+
+{% regroup u.trip_list|dictsort:"mission.airplane.name" by mission.airplane.name as airplane_list %}
+{% regroup u.trip_list|dictsort:"incident.resourceorder" by incident as incident_list %}
+{% regroup u.trip_list|dictsort:"planestart" by planestart|date as date_list %}
+  <div class="row-fluid" style="margin-left:0px;">
+    <div id="myTabContent" class="tab-content">
+      <div class="tab-pane fade" id="zero">
+<h4>{% if not adate and not form %}Recent additions : {% endif %}<span class='ccalculated'>{{ u.tfs }}</span> <a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Flight{{ u.tfs|pluralize }}</a>{% if u.tbs %}{% if u.tms or u.tns %}, {% else %} & {% endif %}<span class='ccalculated'>{{ u.tbs }}</span> <span class="text-info"><a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Departure{{ u.tbs|pluralize }}</a></span>{% else %}{% endif %}{% if u.tms %}{% if u.tns %}, {% else %} & {% endif %}<span class='ccalculated'>{{ u.tms }}</span> <span class="text-success"><a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Ramp Move{{ u.tms|pluralize }}</a></span>{% else %}{% endif %}{% if u.tns %} & <span class='ccalculated'>{{ u.tns }}</span> <span class="text-warning"><a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">NonAvail Interval{{ u.tns|pluralize }}</a></span>{% endif %} by <span class='ccalculated'>{{ airplane_list|length }}</span> <a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Airplane{{ airplane_list|length|pluralize }}</a> against <span class='ccalculated'>{{ incident_list|length }}</span> <a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Incident{{ incident_list|length|pluralize }}</a>{% if date_list|length >= 2 %} in <span class='ccalculated'>{{ date_list|length }}</span> <a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Day{{ date_list|length|pluralize }}</a>{% else %} in <span class='ccalculated'>{{ date_list|length }}</span> <a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Day{{ date_list|length|pluralize }}</a>{% endif %} <span class="pull-right"><a class="btn btn-mini btn-link" href="#two" data-toggle="tab" ><i class='icon icon-list'></i></a> <a class="btn btn-mini btn-link" href="#one" data-toggle="tab"><i class='icon icon-th-list'></i></a> <a class="btn btn-mini btn-link disabled" style="background-color:white;"><i class='icon icon-globe'></i></a></span></h4>
+<hr style="width:100%;margin-top:0px;margin-bottom:10px;"></hr>
+        {% if entmap %}
+        <div class='row-fluid' style=''>
+        <div style='height:440px;border:thick solid black;'>
+        </div>
+        </div>
+        {% endif %}
+      </div>
+      <div class="tab-pane fade" id="one">
+<h4>{% if not adate and not form %}Recent additions : {% endif %}<span class='ccalculated'>{{ u.tfs }}</span> <a href="#two" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Flight{{ u.tfs|pluralize }}</a>{% if u.tbs %}{% if u.tms or u.tns %}, {% else %} & {% endif %}<span class='ccalculated'>{{ u.tbs }}</span> <span class="text-info"><a href="#two" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Departure{{ u.tbs|pluralize }}</a></span>{% else %}{% endif %}{% if u.tms %}{% if u.tns %}, {% else %} & {% endif %}<span class='ccalculated'>{{ u.tms }}</span> <span class="text-success"><a href="#two" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Ramp Move{{ u.tms|pluralize }}</a></span>{% else %}{% endif %}{% if u.tns %} & <span class='ccalculated'>{{ u.tns }}</span> <span class="text-warning"><a href="#two" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">NonAvail Interval{{ u.tns|pluralize }}</a></span>{% endif %} by <span class='ccalculated'>{{ airplane_list|length }}</span> <a href="#two" data-toggle="tab" style="text-decoration:none;color:rgb(0, 0, 0);">Airplane{{ airplane_list|length|pluralize }}</a> against <span class='ccalculated'>{{ incident_list|length }}</span> <a href="#two" data-toggle="tab" style="text-decoration:none;color:rgb(0, 0, 0);">Incident{{ incident_list|length|pluralize }}</a>{% if date_list|length >= 2 %} in <span class='ccalculated'>{{ date_list|length }}</span> <a href="#two" data-toggle="tab" style="text-decoration:none;color:rgb(0, 0, 0);">Day{{ date_list|length|pluralize }}</a>{% else %} in <span class='ccalculated'>{{ date_list|length }}</span> <a href="#two" data-toggle="tab" style="text-decoration:none;color:rgb(0, 0, 0);">Day{{ date_list|length|pluralize }}</a>{% endif %} <span class="pull-right"><a class="btn btn-mini btn-link" href="#two" data-toggle="tab" ><i class='icon icon-list'></i></a> <a class="btn btn-mini btn-link disabled" style="background-color:white;"><i class='icon icon-th-list'></i></a> <a class="btn btn-mini btn-link" href="#zero" data-toggle="tab"><i class='icon icon-globe'></i></a></span></h4>
+<h5><quiet>A 'mission' is a set of flights made by one airplane on one day. Duty hours are specified at the mission. {% if u.mission_list %}Click on its </quiet><strong>Date</strong><quiet> in the table below to get to a mission's page.</quiet></h5>
+<div>
+ <table class="table table-bordered table-condensed table-hover table-striped s" id="s2">
+    <thead>
+    <th>Airplane</th>
+    <th>Date</th>
+    <th>Avail Cost</th>
+    <th>NonAvail Cost</th>
+    <th>Extended Cost</th>
+    <th>Flight Count</th>
+    <th>Flight Time</th>
+    <th>Flight Cost</th>
+    <th>Landing Fees</th>
+    <th>Ret Gal</th>
+    <th>Retardant Cost</th>
+    <th>Total Cost</th>
+    </thead>
+    <tbody>
+{% for mission in u.mission_list %}
+    <tr class="{% if mission.tbs >= 1 %}info{% endif %}">
+        <td><a href="{% url 'flight-airplane-detail' mission.airplane.tail mission.airplane.name %}">{{ mission.airplane }}</a></td>
+        <td><strong><a href="/flight/mission/{{ mission.airplane.tail }}/{{ mission.airplane.name }}/{{ mission.startdate|date:"Y/m/d/" }}">{{ mission.startdate|date:"Y M d" }}</a></strong></td>
+        <td class='number'>$<span class='dcalculated'>{% if mission.acost %}{{ mission.acost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+        <td class='number'>$<span class='dcalculated'>{% if mission.ncost %}{{ mission.ncost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+        <td class='number'>$<span class='dcalculated'>{% if mission.ecost %}{{ mission.ecost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+        <td class='number'><span class='ccalculated'>{% if mission.tfs %}{{ mission.tfs }}{% else %}0{% endif %}</span></td>
+        <td class='number'><span class='ccalculated'>{% if mission.ftime %}{{ mission.ftime|floatformat:2 }}{% else %}0{% endif %}</span></td>
+        <td class='number'>$<span class='dcalculated'>{% if mission.fcost %}{{ mission.fcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+        <td class='number'>$<span class='dcalculated'>{% if mission.lcost %}{{ mission.lcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+        <td class='number'><span class='ccalculated'>{% if mission.retardant_sum %}{{ mission.retardant_sum|intcomma }}{% else %}0{% endif %}</span></td>
+        <td class='number'>$<span class='dcalculated'>{% if mission.rcost %}{{ mission.rcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+        <td class='number'>$<span class='dcalculated'>{% if mission.tcost %}{{ mission.tcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+    </tr>
+{% endfor %}
+    </tbody>
+    <tr class='total'>
+        <td></td>
+        <td><strong>TOTALS</strong></td>
+        <td>$<span class='dcalculated'>{% if u.acost %}{{ u.acost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.ncost %}{{ u.ncost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.ecost %}{{ u.ecost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+        <td><span class='ccalculated'>{% if u.fcount %}{{ u.fcount }}{% else %}0{% endif %}</span></td>
+        <td><span class='ccalculated'>{% if u.ftime %}{{ u.ftime|floatformat:2 }}{% else %}0{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.fcost %}{{ u.fcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.lcost %}{{ u.lcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+        <td><span class='ccalculated'>{% if u.rgal %}{{ u.rgal|intcomma }}{% else %}0{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.rcost %}{{ u.rcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.tcost %}{{ u.tcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+    </tr>
+</table>
+</div>
+{% else %}
+None yet.</quiet></h5>
+{% endif %}
+      </div>
+      <div class="tab-pane fade in active" id="two">
+<h4>{% if not adate and not form %}Recent additions : {% endif %}{% if u.trip_list %}<span class='ccalculated'>{{ u.tfs }}</span> Flight{{ u.tfs|pluralize }}{% if u.tbs %}{% if u.tms or u.tns %}, {% else %} & {% endif %}<span class='ccalculated'>{{ u.tbs }}</span> <span class="text-info">Departure{{ u.tbs|pluralize }}</span>{% else %}{% endif %}{% if u.tms %}{% if u.tns %}, {% else %} & {% endif %}<span class='ccalculated'>{{ u.tms }}</span> <span class="text-success">Ramp Move{{ u.tms|pluralize }}</span>{% else %}{% endif %}{% if u.tns %} & <span class='ccalculated'>{{ u.tns }}</span> <span class="text-warning">NonAvail Interval{{ u.tns|pluralize }}</span>{% endif %}{% else %}<span class='ccalculated'>0</span> Flights{% endif %} by <span class='ccalculated'>{{ airplane_list|length }}</span> <a href="#zero" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Airplane{{ airplane_list|length|pluralize }}</a> against <span class='ccalculated'>{{ incident_list|length }}</span> <a href="#zero" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Incident{{ incident_list|length|pluralize }}</a>{% if date_list|length >= 2 %} in <span class='ccalculated'>{{ date_list|length }}</span> <a href="#zero" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Day{{ date_list|length|pluralize }}</a>{% else %} in <span class='ccalculated'>{{ date_list|length }}</span> <a href="#zero" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Day{{ date_list|length|pluralize }}</a>{% endif %} <span class="pull-right"><a class="btn btn-mini btn-link disabled" style="background-color:white;"><i class='icon icon-list'></i></a> <a class="btn btn-mini btn-link" href="#one" data-toggle="tab"><i class='icon icon-th-list'></i></a> <a class="btn btn-mini btn-link" href="#zero" data-toggle="tab"><i class='icon icon-globe'></i></a></span></h4>
+<h5><quiet>A 'flight' is a trip into the air and back. Each one has an origin and a destination, a start and stop time, a retardant load, and misc costs. {% if u.trip_list %}Click on the </quiet><strong>Date</strong><quiet> in the table below to get to the mission page for that flight.</quiet></h5>
+
+<div>
+ <table class="table table-bordered table-condensed table-hover table-striped s" id="s1">
+    <thead>
+    <th>Airplane</th>
+    <th>Incident</th>
+    <th>Date</th>
+    <th>From <i class='fa fa-plane fa-rotate-45'></i> To</th>
+    <th>Start Time</th>
+    <th>Stop Time</th>
+    <th>Flight Time</th>
+    <th>Flight Cost</th>
+    <th>Landing Fee</th>
+    <th>Ret Gal</th>
+    <th>Ret Type</th>
+    <th>Ret Cost</th>
+    <th>Misc Cost</th>
+    <th>Move Cost</th>
+    <th>Total Cost</th>
+    </thead>
+    <tbody>
+{% for m in u.mission_list %}
+{% for trip in m.trip_list %}
+  <tr class="{% if trip.fmso == 's' %}warning{% elif trip.fmso == 'm' %}success{% elif trip.fmso == 'x' %}warning{% elif not trip.tobase %}info{% endif %}">
+        <td><a href="{% url 'flight-airplane-detail' trip.mission.airplane.tail trip.mission.airplane.name %}">{{ trip.mission.airplane }}</a></td>
+        <td>{% if trip.incident %}<a href="{% url 'flight-incident-detail' trip.incident.name trip.incident.resourceorder %}">{{ trip.incident.name }}</a>{% endif %}</td>
+        <td><strong><a href="/flight/mission/{{ trip.mission.airplane.tail }}/{{ trip.mission.airplane.name }}/{{ trip.mission.startdate|date:"Y/m/d/" }}">{{ trip.mission.startdate|date:"Y M d" }}</a></strong></td>
+        <td>{% if trip.fmso == 'd' %}<i class="fa fa-cloud"></i>{% elif trip.fmso == 'x' %}<strong><small>Pays Extended</small></strong>{% elif trip.frombase %}<a href="{% url 'flight-airbase-detail' trip.frombase %}">{{ trip.frombase }}</a>{% else %}--{% endif %} {% if trip.fmso == 's' %}<i class="fa fa-clock-o"></i>{% elif trip.fmso == 'm' %}<i class="fa fa-random"></i>{% elif trip.fmso == 'x' %}{% elif not trip.tobase %}<i class="fa fa-plane fa-spin"></i>{% else %}<strong> <i class='fa fa-plane fa-rotate-45'></i> </strong>{% endif %} {% if trip.div == 1 %}<i class="fa fa-cloud"></i>{% elif trip.tobase %}<a href="{% url 'flight-airbase-detail' trip.tobase %}">{{ trip.tobase }}</a>{% elif trip.fmso == 'x' %}{% else %}--{% endif %}</td>
+        <td>{{ trip.planestart|date:"H:i" }}</td>
+        <td>{% if trip.fmso == 'x' %}{% else %}{{ trip.planestop|date:"H:i" }}{% endif %}</td>
+        <td class='number'>{% if trip.ftime and trip.tobase %}<span class='ccalculated'>{{ trip.ftime|floatformat:2|intcomma }}</span>{% else %}--{% endif %}</td>
+        <td class='number'>{% if trip.fcost and trip.tobase %}$<span class='dcalculated'>{{ trip.fcost|floatformat:2|intcomma }}</span>{% else %}--{% endif %}</td>
+        <td class='number'>{% if trip.div == 1 %}--{% elif trip.lcost and trip.tobase %}$<a href="/flight/airbase/{{ trip.tobase.tla|upper }}/fee/">{{ trip.lcost|floatformat:2|intcomma }}</a>{% elif trip.tobase %}<span class='unk small'>NO DATA</span>{% else %}--{% endif %}</td>
+        <td class='number'>{% if trip.retardantgal %}{{ trip.retardantgal|intcomma }}{% else %}0{% endif %}</td>
+        <td>{% if trip.rtype %}<a href="/flight/airbase/{{ trip.frombase.tla|upper }}/retardant/">{{ trip.rtype }}</a>{% else %}--{% endif %}</td>
+        <td class='number'>$<span class='dcalculated'>{% if trip.rcost %}{{ trip.rcost|floatformat:2|intcomma }}{% else %}0</span>{% endif %}</td>
+        <td class='number'>${% if trip.misccost %}{{ trip.misccost|floatformat:2|intcomma }}{% else %}0{% endif %}</td>
+        <td class='number'>$<span class='dcalculated'>{% if trip.mcost %}{{ trip.mcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+        <td class='number'>$<span class='dcalculated'>{% if trip.tcost %}{{ trip.tcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+    </tr>
+{% endfor %}
+{% endfor %}
+    </tbody>
+    <tr class='total'>
+        <td></td>
+        <td></td>
+        <td><strong>TOTALS</strong></td>
+        <td></td>
+        <td></td>
+        <td></td>     
+        <td><span class='ccalculated'>{{ u.ftime|floatformat:2 }}</span></td>
+        <td>$<span class='dcalculated'>{% if u.fcost %}{{ u.fcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.lcost %}{{ u.lcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+        <td><span class='ccalculated'>{% if u.rgal %}{{ u.rgal|intcomma }}{% else %}0{% endif %}</span></td>
+        <td></td>
+        <td>$<span class='dcalculated'>{% if u.rcost %}{{ u.rcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.ocost %}{{ u.ocost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.mcost %}{{ u.mcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.icost %}{{ u.icost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+    </tr>
+</table>
+</div>
+{% else %}
+<div>
+<p>
+</p>
+</div>
+{% endif %}
+      </div>
+    </div>
+  </div>
+
+
+{% endwith %}
+{% endif %}
+{% endblock %}
+
+{% block endscripts %}
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="/static/b-3.0.3/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="/static/tablesorter/jquery.tablesorter.js"></script>
+<script type="text/javascript">
+$(function() {
+    $("#s1").tablesorter({
+      headers: {
+        1: { sorter: "text" },
+        2: { sorter: "uslongDate" }
+      }
+  });
+    $("#s2").tablesorter({
+      headers: {
+        1: { sorter: "uslongDate" }
+      }
+  });
+});
+</script>
+<script type="text/javascript" >
+$(function(){
+    $('.container-fluid').tooltip({
+      selector: "a[data-toggle=tooltip]",
+    })
+});
+</script>
+</script>
+
+{% endblock %}

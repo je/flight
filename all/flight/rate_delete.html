@@ -1,0 +1,39 @@
+{% extends "flight/rate_list.html" %}
+
+{% block title %}
+<title>Airplane {{ object.tail }} Clock Rate</title>
+{% endblock %} 
+
+{% block content %}
+{% load humanize %}
+<script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script> 
+ <div class="row col-lg-6 col-md-6 col-sm-6">
+ 	<br>
+ 	<form class="well form-horizontal" method="POST" enctype="multipart/form-data" action="{% if therate %}{% url 'flight-airplane-rate-delete' therate.airplane.tail therate.airplane.name therate.id %}{% else %}{% if airplane %}{% url 'flight-airplane-rate-add' airplane.tail airplane.name %}{% else %}{% url 'flight-rate-add' %}{% endif %}{% endif %}">
+
+    	<legend>{% if therate %}Deleting Clock Rate{% else %}New Clock Rate{% endif %} {% if airplane %}for <quiet>Airplane</quiet> <a href="{% url 'flight-airplane-detail' airplane.tail %}">{{ airplane.name }}</a>{% endif %}</legend>
+    	This is <strong>forever</strong> and <strong>completely irreversible</strong>. Don't do anything you'll regret. Maybe take a walk and come back later?
+		{% for field in form %}
+		{% ifequal field.name "author" %}
+		<input type="hidden">{{ field }}</input>
+		{% else %}
+		<div class="form-group{% if field.errors %} has-error{% endif %}">
+		<label class="control-label" for="{{ field.name }}">{{ field.label }}</label>
+		<div>{{ field }}
+		{% if field.errors %}{% for error in field.errors %}
+			<span class="help-inline">{{ error|escape }}</span>
+		{% endfor %}{% endif %}
+		</div>
+		</div>
+		{% endifequal %}
+		{% endfor %}
+		<br>
+		<br>
+         <div>
+            <button type="submit" class="btn btn-danger"><i class="glyphicon glyphicon-remove glyphicon-white"></i> {% if therate %}Delete Clock Rate{% endif %}</button>
+            <a class="btn btn-default" href="{% if therate %}{% url 'flight-airplane-detail' therate.airplane.tail therate.airplane.name %}{% else %}{% if airplane %}{% url 'flight-airplane-detail' airplane.tail airplane.name %}{% else %}{% url 'flight-rate-list' %}{% endif %}{% endif %}">Cancel</a>
+          </div>
+		{% csrf_token %}
+	</form>
+ </div>
+{% endblock %}

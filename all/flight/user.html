@@ -1,0 +1,383 @@
+{% extends "flight/index.html" %}
+
+{% block extrahead %}
+<link href='//fonts.googleapis.com/css?family=Carter+One' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="/static/fa-4.0.0/css/font-awesome.min.css">
+<link href="/static/one-page-wonder.css" rel="stylesheet">
+<style type="text/css">
+/* Custom container */
+.container { padding: 0 15px; margin: 0 auto; width: 100%;}
+.row { padding: 0px; margin: 0 0;}
+.map {height:440px;border:thick solid black;}
+.navbar-nav > li > a {padding-top:5px !important; padding-bottom:5px !important;}
+.navbar {min-height:30px !important;}
+h3 {margin-top:5px;}
+
+styled {font-family: 'Carter One', cursive;}
+
+.square {
+    display: inline-block;
+    height: 12px;
+    width: 12px;
+}
+
+.green {
+    background-color: green;
+}
+
+.blue {
+    background-color: blue;
+}
+
+.red {
+    background-color: red;
+}
+
+.orange {
+    background-color: orange;
+}
+
+.cyan {
+    background-color: cyan;
+}
+
+.magenta {
+    background-color: magenta;
+}
+
+.black {
+    background-color: black;
+}
+
+quiet {color:#666;} /* grey */
+ccalculated {color:#8B0000;} /* DarkRed */
+dcalculated {color:#006400;} /* DarkGreen */
+tcalculated {color:#8B0000; width:50px; margin-right:auto; text-align:right;}
+tm {width:50px; float:right; margin-right:auto; text-align:right;}
+rt {width:60px; float:right; margin-right:auto; text-align:right;}
+lt {width:60px; margin-right:auto; text-align:right;}
+label.text {cursor: text;}
+span.lt {width:90px;}
+unk {color:white;background-color:black;} /* white on black */
+td.plane {width:100px;}
+td.date1 {width:80px;}
+td.date2 {width:80px;}
+td.ex {background-color:white;border-left:thick solid #FF4500;}
+td.total {background-color:white;border-top:thick solid;text-align:right;}
+td.number {text-align:right;}
+td.blank {background-color:white;}
+tr.zg {background-color: #f9f9f9;} /* zebra */
+tr.zb {background-color: #F0F8FF;} /* zebra */
+dogreen {color:#556B2F;} /* DarkOliveGreen */
+fgreen {color:#228B22;} /* ForestGreen */
+ored {color:#FF4500;} /* OrangeRed */
+/* a:visited {color:#4B0082;}  Indigo */
+#id_effectivedate_0 {width:80px;}
+#id_effectivedate_1 {width:50px; margin-left:5px;}
+#id_dailyavailstart_0 {display:none;}
+#xid_dailyavailstop_0 {display:none;}
+#xid_nonavailstart_0 {display:none;}
+#xid_nonavailstop_0 {display:none;}
+#id_planestart_0 {display:none;}
+#id_planestop_0 {display:none;}
+
+
+table.s .tablesorter-header {
+  cursor: pointer;
+}
+table.s .tablesorter-header:after {
+  content: "";
+  float: right;
+  margin-top: 7px;
+  border-width: 0 4px 4px;
+  border-style: solid;
+  border-color: #000000 transparent;
+  visibility: hidden;
+}
+table.s .tablesorter-headerSortUp, table.s .tablesorter-headerSortDown {
+  background-color: #f7f7f9;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+}
+table.s .tablesorter-header:hover:after {
+  visibility: visible;
+}
+table.s .tablesorter-headerSortDown:after, table.s .tablesorter-headerSortDown:hover:after {
+  visibility: visible;
+  filter: alpha(opacity=60);
+  -moz-opacity: 0.6;
+  opacity: 0.6;
+}
+table.s .tablesorter-headerSortUp:after {
+  border-bottom: none;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid #000000;
+  visibility: visible;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  filter: alpha(opacity=60);
+  -moz-opacity: 0.6;
+  opacity: 0.6;background-color:white;border-top:thick solid;
+}
+
+    img.olTileImage {
+        max-width: none;
+    }
+
+    .olLayerGooglePoweredBy {
+      display: none;
+    }
+
+@media print {
+      .visible-print  { display: inherit !important; }
+      .hidden-print   { display: none !important; }
+      a:link:after, a:visited:after {
+        content: "";
+      }
+    }
+
+.fa-rotate-45{filter:progid:DXImageTransform.Microsoft.BasicImage(rotation=1);-webkit-transform:rotate(45deg);-moz-transform:rotate(45deg);-ms-transform:rotate(45deg);-o-transform:rotate(45deg);transform:rotate(45deg)}
+	
+</style>
+{% endblock %}
+
+{% block title %}
+<title>User {{ puser }}</title>
+{% endblock %} 
+
+{% block pagetitle %}
+{% endblock %}
+
+
+{% block content %}
+<h3><quiet>User</quiet> {{ puser }} {% ifequal request.user puser %}<span class="pull-right"><a class="btn btn-xs btn-default" href="/users/edit/"> Edit user</a></span>{% endifequal %}</h3>
+
+{% if user_list %}
+<div class="row"><label class="col-md-2"><strong>User{{ user_list|pluralize }}</strong> <a href="/user/{{ puser.user }}/permissions/"><i class="glyphicon glyphicon-pencil"></i></a></label> <span class="col-md-7">
+		{% for user in user_list %}
+			{% if forloop.first %}
+				{% if forloop.last %}
+				<a href="/user/{{ user.username }}/">{{ user.first_name|slice:"1" }} {{ user.last_name }}</a>
+				{% else %}
+				<a href="/user/{{ user.username }}/">{{ user.first_name|slice:"1" }} {{ user.last_name }}</a>,
+				{% endif %}
+			{% else %}
+				{% if forloop.last %}
+				and <a href="/user/{{ user.username }}/">{{ user.first_name|slice:"1" }} {{ user.last_name }}</a>
+				{% else %}
+				<a href="/user/{{ user.username }}/">{{ user.first_name|slice:"1" }} {{ user.last_name }}</a>,
+				{% endif %}
+			{% endif %}
+		{% endfor %}
+	</span>
+</div>
+{% endif %}
+
+<div class="row">
+<div class="col-md-7">
+<div class="row">
+		<label class="col-md-2"><strong>Name</strong></label> <span class="col-md-5">{% if puser.first_name %}{{ puser.first_name }} {{ puser.last_name }}{% endif %}</span>
+</div>
+<div class="row">
+		<label class="col-md-2"><strong>Position</strong></label> <span class="col-md-5">{% if puser.position %}{{ puser.position }}{% endif %}</span>
+</div>
+<div class="row">
+		<label class="col-md-2"><strong>Agency</strong></label> <span class="col-md-5">{% if puser.agency %}{{ puser.agency }}{% endif %}</span>
+</div>
+<div class="row">
+		<label class="col-md-2"><strong>Address</strong></label> <span class="col-md-5">{% if puser.address and puser.address != 'NONE' %}{{ puser.address }} <br />{% endif %}{% if puser.city and puser.city != 'NONE' %}{{ puser.city }} {% endif %}{% if puser.state %}{{ puser.state|upper }} {% endif %}{% if puser.zip4 and puser.zip4 != 'NONE' %}{{ puser.zip4 }}{% endif %}</span>
+</div>
+<div class="row">
+		<label class="col-md-2"><strong>Phones</strong></label> <span class="col-md-5">{% if puser.telephone %}({{ puser.telephone|slice:":3" }}) {{ puser.telephone|slice:"3:6" }}-{{ puser.telephone|slice:"6:10" }} {% endif %}</span>
+</div>
+<div class="row">
+		<label class="col-md-2"><strong></strong></label> <span class="col-md-5">{% if puser.telephone2 %}({{ puser.telephone2|slice:":3" }}) {{ puser.telephone2|slice:"3:6" }}-{{ puser.telephone2|slice:"6:10" }} {% endif %}</span>
+</div>
+<div class="row">
+		<label class="col-md-2"><strong>Bio</strong></label> <span class="col-md-5">{% if puser.bio %}{{ puser.bio }}{% endif %}</span>
+</div>
+<div class="row">
+		<label class="col-md-2"><strong>User since</strong></label> <span class="col-md-5">{{ puser.date_joined|date:"N Y" }}</span>
+</div>
+<div class="row">
+		<label class="col-md-2"><strong>Last login</strong></label> <span class="col-md-5">{{ puser.last_login|timesince }} ago</span>
+</div>
+<div class="row">
+		<label class="col-md-2"><strong>Airbases</strong></label> <div class="col-md-5">
+		{% if airbases %}{% for airbase in airbases %}<a href="/airbase/{{ airbase }}/">{{ airbase }}</a> {% endfor %}{% endif %}
+		</div>
+</div>
+<div class="row"><br />
+</div>
+</div>
+<div>
+		<div class="square" style="width:272px;height:314px;background-color:#FFFFF0;padding:8px 8px 50px 8px;border:1px #DCDCDC solid;margin-left:105px"><a class="square" style="width:256px;height:256px;background-color:#130f30;">{% if puser.avatar %}<img style="height:256px;" src="" alt="" height="256" width="256">{% else %}{% endif %}</a></div>
+</div>
+</div>
+
+<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/flot/excanvas.min.js"></script><![endif]-->
+<script language="javascript" type="text/javascript" src="/static/flot/jquery.js"></script>
+<script language="javascript" type="text/javascript" src="/static/flot/jquery.flot.js"></script>
+<script language="javascript" type="text/javascript" src="/static/flot/jquery.flot.time.js"></script>
+<script language="javascript" type="text/javascript" src="/static/flot/jquery.flot.resize.js"></script>
+<script language="javascript" type="text/javascript" src="/static/flot/jquery.flot.axislabels.js"></script>
+<script language="javascript" type="text/javascript" src="/static/flot/jquery.flot.orderBars.js"></script>
+<script language="javascript" type="text/javascript" src="/static/flot/jquery.flot.stack.js"></script>
+
+<script type="text/javascript">
+$(function() {
+	var sc = [
+	{% for month in u_dates reversed %}[gd({{ month.label|date:"Y,m,d" }}),{{ month.scount }}]{% if not forloop.last %},{% endif %}{% endfor %}
+	];
+	var wc = [
+	{% for month in u_dates reversed %}[gd({{ month.label|date:"Y,m,d" }}),{{ month.wcount }}]{% if not forloop.last %},{% endif %}{% endfor %}
+	];
+	var ec = [
+	{% for month in u_dates reversed %}[gd({{ month.label|date:"Y,m,d" }}),{{ month.ecount }}]{% if not forloop.last %},{% endif %}{% endfor %}
+	];
+	function gd(year, month, day) {
+	    return new Date(year, month - 1, day).getTime();
+	}
+	function euroFormatter(v, axis) {
+		return v.toFixed(axis.tickDecimals) + "€";
+	}
+	function doPlot(position) {
+		$.plot("#u1", [
+			{ data: sc, label: "S", color: "green", bars: { show: true, barWidth: 0.5, align: "center", }, lines: { lineWidth: 3, fill: false, fillColor: null, }, },
+			{ data: wc, label: "W", color: "orange", bars: { show: true, barWidth: 0.5, align: "center", }, lines: { lineWidth: 3, fill: false, fillColor: null, }, },
+			{ data: ec, label: "E", color: "crimson", bars: { show: true, barWidth: 0.5, align: "center", }, lines: { lineWidth: 3, fill: false, fillColor: null, }, }
+		], {
+			xaxes: [ {
+				mode: "time",
+				axisLabel: null,
+			} ],
+			yaxes: [ {
+				// align if we are to the right
+				alignTicksWithAxis: position == "right" ? 1 : null,
+				position: position,
+				min: 0,
+				//axisLabel: 'Millions of board feet',
+				//tickFormatter: euroFormatter
+			} ],
+			legend: { position: "ne" }
+		});
+	}
+	doPlot("left");
+	$("button").click(function () {
+		doPlot($(this).text());
+	});
+	var placeholder = $("#u1");
+});
+</script>
+
+<script type="text/javascript">
+$(function() {
+	var sc = [
+	{% for month in u_dates reversed %}[gd({{ month.label|date:"Y,m,d" }}),{{ month.cums }}]{% if not forloop.last %},{% endif %}{% endfor %}
+	];
+	var wc = [
+	{% for month in u_dates reversed %}[gd({{ month.label|date:"Y,m,d" }}),{{ month.cumw }}]{% if not forloop.last %},{% endif %}{% endfor %}
+	];
+	var ec = [
+	{% for month in u_dates reversed %}[gd({{ month.label|date:"Y,m,d" }}),{{ month.cume }}]{% if not forloop.last %},{% endif %}{% endfor %}
+	];
+	function gd(year, month, day) {
+	    return new Date(year, month - 1, day).getTime();
+	}
+	function euroFormatter(v, axis) {
+		return v.toFixed(axis.tickDecimals) + "€";
+	}
+	function doPlot(position) {
+		$.plot("#u2", [
+			{ data: sc, label: "S", color: "green", lines: { lineWidth: 3, fill: false, fillColor: null, }, },
+			{ data: wc, label: "W", color: "orange", lines: { lineWidth: 3, fill: false, fillColor: null, }, },
+			{ data: ec, label: "E", color: "red", lines: { lineWidth: 3, fill: false, fillColor: null, }, }
+		], {
+			xaxes: [ {
+				mode: "time",
+				axisLabel: null,
+			} ],
+			yaxes: [ {
+				// align if we are to the right
+				alignTicksWithAxis: position == "right" ? 1 : null,
+				position: position,
+				min: 0,
+				//axisLabel: 'Millions of board feet',
+				//tickFormatter: euroFormatter
+			} ],
+			legend: { position: "ne" }
+		});
+	}
+	doPlot("left");
+	$("button").click(function () {
+		doPlot($(this).text());
+	});
+	var placeholder = $("#u2");
+});
+</script>
+
+<h6><quiet>Daily actions</quiet></h6>
+<div class="row">
+	{% if logitems %}
+		<div class="demo-container">
+		<div id="u1" class="demo-placeholder" style="height:150px;width:100%;"></div>
+		</div>
+</div>
+
+<h6><quiet>Cumulative actions</quiet></h6>
+<div class="row">
+		<div class="demo-container">
+		<div id="u2" class="demo-placeholder" style="height:150px;width:100%;"></div>
+		</div>
+	{% endif %}
+</div>
+
+{% endblock %}
+
+{% block endscripts %}
+<script src="/static/b-3.0.3/js/bootstrap.min.js"></script>
+<link href='/static/datepicker/datepicker.css' rel='stylesheet' type='text/css'>
+<script src="/static/tablesorter/jquery.tablesorter.js"></script>
+<script type="text/javascript">
+$(function() {
+    $("#s0").tablesorter();
+});
+</script>
+<script type="text/javascript">
+$(function() {
+    $("#s1").tablesorter({
+	    headers: {
+	      1: { sorter: 'text' },
+	      2: { sorter: "uslongDate" }
+	    }
+	});
+    $("#s2").tablesorter({
+	    headers: {
+	      2: { sorter: "uslongDate" }
+	    }
+	});
+});
+</script>
+<script src="/static/datepicker/bootstrap-datepicker.js"></script>
+<script>
+$(function(){
+	$('#adate').datepicker({
+		format: 'yyyy-mm-dd',
+		autoclose: 'True'
+	});
+	$('#bdate').datepicker({
+		format: 'yyyy-mm-dd',
+		autoclose: 'True'
+	});
+});
+</script>
+<script>
+$(function(){
+    $('.container').tooltip({
+      selector: "a[data-toggle=tooltip]",
+      //placement: 'right'
+    })
+});
+</script>
+{% endblock %}

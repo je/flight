@@ -1,0 +1,42 @@
+{% extends "flight/fairs.html" %}
+
+{% block content %}
+{% load humanize %}
+        <h1 style="margin: 30px">Cost Entries</h1>
+        <div style="margin: 30px">
+            {% if costentry_list %}
+            <table class="table table-striped">
+                <tr>
+                <th>OrgAbbreviation</th>
+                <th>Make:Model</th>
+                <th>SerialNum</th>
+                <th>Report Start Date</th>
+                <th>Report End Date</th>
+                <th>Cost Type</th>
+                <th>Cost</th>
+                <th></th>
+                <th></th>
+                </tr>
+                {% for costentry in costentry_list %}
+                    <tr>
+                        <td>{{ costentry.orgabbreviation }}</td>
+                        <td>{{ costentry.makemodel }}</td>
+                        <td>{{ costentry.serialnum }}</td>
+                        <td>{{ costentry.reportstartdate }}</td>
+                        <td>{{ costentry.reportenddate }}</td>
+                        <td>{{ costentry.costtype }}</td>
+                        <td>{{ costentry.cost }}</td>
+                        <td><a href="{% url 'edit_costentry' costentry.pk %}">edit</a></td>
+                        <td>
+                            <form method="POST" action="{% url 'delete_costentry' costentry.pk %}">
+                                {% csrf_token %}
+                                <input type="submit" class="btn btn-sm btn-danger" value="delete"></input>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+            <p><a href="{% url 'create_costentry' %}">New cost entry</a></p>
+        </div>
+{% endblock %}

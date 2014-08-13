@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet/less" type="text/css" href="/static/b/bootstrap.less" />
+    <script src="/static/b/less-1.3.3.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="/static/b/glyphicons.css" />
+
+{% block extrahead %}
+<link href='//fonts.googleapis.com/css?family=Carter+One' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="/static/fa-4.0.0/css/font-awesome.min.css">
+<style type="text/css">
+styled {font-family: 'Carter One', cursive;}
+
+quiet {color:#666;} /* grey */
+ccalculated {color:#8B0000;} /* DarkRed */
+dcalculated {color:#006400;} /* DarkGreen */
+tcalculated {color:#8B0000; width:50px; margin-right:auto; text-align:right;}
+tm {width:50px; float:right; margin-right:auto; text-align:right;}
+rt {width:60px; float:right; margin-right:auto; text-align:right;}
+lt {width:60px; margin-right:auto; text-align:right;}
+label.text {cursor: text;}
+span.lt {width:90px;}
+unk {color:white;background-color:black;} /* white on black */
+td.plane {width:100px;}
+td.date {width:80px;}
+td.ex {background-color:white;border-left:thick solid #FF4500;}
+td.total {background-color:white;border-top:thick solid;text-align:right;}
+td.number {text-align:right;}
+td.blank {background-color:white;}
+tr.zg {background-color: #f9f9f9;} /* zebra */
+tr.zb {background-color: #F0F8FF;} /* zebra */
+dogreen {color:#556B2F;} /* DarkOliveGreen */
+fgreen {color:#228B22;} /* ForestGreen */
+ored {color:#FF4500;} /* OrangeRed */
+/* a:visited {color:#4B0082;}  Indigo */
+#id_effectivedate_0 {width:80px;}
+#id_effectivedate_1 {width:50px; margin-left:5px;}
+#id_dailyavailstart_0 {display:none;}
+#xid_dailyavailstop_0 {display:none;}
+#xid_nonavailstart_0 {display:none;}
+#xid_nonavailstop_0 {display:none;}
+#id_planestart_0 {display:none;}
+#id_planestop_0 {display:none;}
+
+@media print {
+      .visible-print  { display: inherit !important; }
+      .hidden-print   { display: none !important; }
+      a:link:after, a:visited:after {
+        content: "";
+      }
+    }
+
+.fa-rotate-45{filter:progid:DXImageTransform.Microsoft.BasicImage(rotation=1);-webkit-transform:rotate(45deg);-moz-transform:rotate(45deg);-ms-transform:rotate(45deg);-o-transform:rotate(45deg);transform:rotate(45deg)}
+	
+</style>
+
+{% endblock %}
+
+{% block favico %} 
+{% endblock %}
+  </head>
+  <body>
+<div class='container' style="margin-left:50px;">
+{% block title %}
+<title>Daily Activity Summary {{ object.airplane.name }} {{ object.startdate|date:"Y M d" }}</title>
+{% endblock %}
+
+{% block content %}
+
+{% block mtitle %}
+<br />
+{% endblock %}
+
+{% block mhead %}
+{% load humanize %}
+{% with object as mission %}
+
+<div class='row'>
+<div class='col-md-12'>
+<h3><quiet>Daily Activity Summary {% if mission.opsbase %}<a href="{% url 'flight-airbase-detail' mission.opsbase %}">{{ mission.opsbase }}</a>{% else %}--{% endif %} PHONE # {% if mission.opsbase.phone %}({{ mission.opsbase.phone|slice:":3" }}) {{ mission.opsbase.phone|slice:"3:6" }}-{{ mission.opsbase.phone|slice:"6:10" }}{% else %}--{% endif %} FAX # {% if mission.c.adminbase.fax %}({{ mission.c.adminbase.fax|slice:":3" }}) {{ mission.c.adminbase.fax|slice:"3:6" }}-{{ mission.c.adminbase.fax|slice:"6:10" }}{% else %}--{% endif %}</quiet></h3>
+ <table class="table table-bordered table-condensed table-striped">
+	<tbody>
+	<tr>
+		<th>DATE:</th><td><a href="/mission/{{ mission.airplane.tail }}/{{ mission.airplane.name }}/{{ mission.startdate|date:"Y/m/d" }}/">{{ mission.startdate|date:"Y M d" }}<br />{{ mission.startdate|date:"l" }}</a></td>
+		<th>CALLSIGN #</th><td><strong><a href="/airplane/{{ mission.airplane.tail }}/{{ mission.airplane.name }}/">{{ mission.airplane.name }}</a></strong></td>
+		<th>A/C TYPE</th><td>!</td>
+		<th>FAA #</th><td><a href="/airplane/{{ mission.airplane.tail }}/">{{ mission.airplane.tail }}</a></td>
+	</tr>
+	<tr>
+		<th>PILOT:</th><td colspan="2">{% if mission.pilot %}<a href="/person/{{ mission.pilot.firstname }} {{ mission.pilot.lastname }}/">{{ mission.pilot.firstname }} {{ mission.pilot.lastname }}</a>{% else %}--{% endif %}</td>
+		<th>COPILOT:</th><td colspan="2">{% if mission.copilot %}<a href="/person/{{ mission.copilot.firstname }} {{ mission.copilot.lastname }}/">{{ mission.copilot.firstname }} {{ mission.copilot.lastname }}</a>{% else %}--{% endif %}</td>
+		<th>FLT. MECH/CREW:</th><td colspan="2">{% if mission.othercrew %}<a href="/person/{{ mission.othercrew.firstname }} {{ mission.othercrew.lastname }}/">{{ mission.othercrew.firstname }} {{ mission.othercrew.lastname }}</a>{% else %}--{% endif %}</td>
+	</tr>
+
+	<tr>
+		<th>START TIME:</th><td colspan="2">{% if mission.dailyavailstart %}{{ mission.dailyavailstart|date:"H:i" }}{% else %}--{% endif %}</td>
+		<th>END TIME:</th><td colspan="2">{% if mission.dailyavailstop %}{{ mission.dailyavailstop|date:"H:i" }}{% else %}--{% endif %}</td>
+		<th>TOTAL HRS:</th><td colspan="2">{{ mission.dutyhrs }}</td>
+	</tr>
+	</tbody>
+</table>
+</div>
+</div>
+
+{% endwith %} 
+{% endblock %}
+{% block thead %}
+{% with object as mission %} 
+{% if trip_list %}
+<div class='row'>
+<div class='col-md-12'>
+ <table class="table table-bordered table-condensed">
+	<thead>
+	<th>REQ-#</th>
+	<th>USER UNIT</th>
+	<th class='col-md-2'>INCIDENT NAME</th>
+	<th class='col-md-2'>RESOURCE ORDER NO:</th>
+	<th>ORIGIN/DESTINATION</th>
+	<th>FIRE CHG #</th>
+	<th>PASSENGERS/CREW</th>
+	<th>QTY GALS</th>
+	<th>A/C START</th>
+	<th>A/C STOP</th>
+	<th>ELAPS MIN</th>
+	<th>TIME HD</th>
+	<th>CUM TIME</th>
+	</thead>
+	<tbody>
+{% for trip in trip_list %}
+	<tr class="{% if trip.fmso == 's' %}warning{% elif trip.fmso == 'm' %}success{% elif trip.fmso == 'x' %}warning{% elif not trip.tobase %}info{% endif %}">
+		<td>???</td>
+		<td>{% if trip.incident.userunit %}{{ trip.incident.userunit }}{% endif %}</td>
+        <td>{% if trip.incident %}<a href="{% url 'flight-incident-detail' trip.incident.name trip.incident.resourceorder %}">{{ trip.incident.name }}{% endif %}</a></td>
+        <td>{% if trip.incident %}{{ trip.incident.resourceorder }}{% else %}--{% endif %}</td>
+		<td>{% if trip.fmso == 'd' %}<i class="fa fa-cloud"></i>{% elif trip.fmso == 'x' %}<strong><small>Pays Extended</small></strong>{% elif trip.frombase %}<a href="{% url 'flight-airbase-detail' trip.frombase %}">{{ trip.frombase }}</a>{% else %}--{% endif %} {% if trip.fmso == 's' %}<i class="fa fa-clock-o"></i>{% elif trip.fmso == 'm' %}<i class="fa fa-random"></i>{% elif trip.fmso == 'x' %}{% elif not trip.tobase %}<i class="fa fa-plane fa-spin"></i>{% else %}<strong> <i class='fa fa-plane fa-rotate-45'></i> </strong>{% endif %} {% if trip.div == 1 %}<i class="fa fa-cloud"></i>{% elif trip.tobase %}<a href="{% url 'flight-airbase-detail' trip.tobase %}">{{ trip.tobase }}</a>{% elif trip.fmso == 'x' %}{% else %}--{% endif %}</td>
+        <td>{% if trip.incident %}{{ trip.incident.firechargenum }}{% else %}--{% endif %}</td>
+        <td>???</td>
+		<td class='number'>{% if trip.retardantgal %}{{ trip.retardantgal }}{% else %}0{% endif %}</td>
+		<td>{{ trip.planestart|date:"H:i" }}</td>
+		<td>{% if trip.fmso == 'x' %}{% else %}{{ trip.planestop|date:"H:i" }}{% endif %}</td>
+		<td class='number'>{% if trip.fmso == 'd' %}<span class='ccalculated'>{{ trip.min }}</span>{% elif trip.fmso == 'm' %}<span class='ccalculated'>{{ trip.min }}</span>{% elif trip.fmso == 'f' and trip.tobase %}<span class='ccalculated'>{{ trip.min }}</span>{% else %}--{% endif %}</td>
+
+		<td class='number'>{% if trip.fmso == 'm' %}<span class='ccalculated'>{{ trip.mtime }}</span>{% elif trip.ftime and trip.tobase %}<span class='ccalculated'>{{ trip.ftime|floatformat:2 }}</span>{% else %}--{% endif %}</td>
+		<td class='number'>{% if trip.cftime %}<span class='ccalculated'>{{ trip.cftime|floatformat:2 }}</span>{% else %}--{% endif %}</td>
+	</tr>
+{% endfor %}
+	</tbody>
+	<tr>
+		<td class='total'><strong>TOTALS</strong></td>
+		<td class='total'></td>
+		<td class='total'></td>
+		<td class='total'></td>
+		<td class='total'></td>
+		<td class='total'></td>
+		<td class='total'></td>
+		<td class='total'><span class='ccalculated'>{% if mission.rgal %}{{ mission.rgal }}{% else %}0{% endif %}</span></td>
+		<td class='total'></td>
+		<td class='total'></td>
+		<td class='total'><span class='ccalculated'>{% if mission.acchhmm %}{{ mission.acchhmm }}{% endif %}</span></td>
+		<td class='total'><span class='ccalculated'>{% if mission.fmtime %}{{ mission.fmtime|floatformat:2 }}{% endif %}</span></td>
+		<td class='total'><span class='ccalculated'>{% if mission.fmtime %}{{ mission.fmtime|floatformat:2 }}{% endif %}</span></td>
+	</tr>
+</table>
+</div>
+</div>
+{% else %}
+{% endif %}
+
+
+{% endwith %}
+{% endblock %}
+
+{% block missionhelp %}
+{% ifequal request.user.username 'xx@xxxx.xxx' %}
+{{ object.d1 }}
+{% endifequal %}
+{% endblock %}
+{% endblock %}
+<div>
+  </body>
+</html>

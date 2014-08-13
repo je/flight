@@ -1,0 +1,74 @@
+{% extends "flight/index.html" %}
+ 
+{% block title %}
+<title>Airbases</title>
+{% endblock %} 
+
+{% block content %}
+{% load humanize %}
+{% regroup airbase_list|dictsort:"st" by st as state_list %}
+  <div class="row">
+    <div id="myTabContent" class="tab-content">
+      <div class="tab-pane fade" id="zero">
+<h3><a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(0, 0, 0);"><i class="glyphicon glyphicon-road" style="color:gainsboro;"></i></a> {% if airbase_list %}<span class='ccalculated'>{{ airbase_list|length }}</span> <a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(0, 0, 0);">Airbase{{ airbase_list|length|pluralize }}</a>{% else %}<span class='ccalculated'>0</span> Airbases{% endif %} <quiet>in</quiet> <span class='ccalculated'>{{ state_list|length }}</span> <a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(0, 0, 0);">State{{state_list|length|pluralize}}</a> <span class="pull-right"><a class="btn btn-xs btn-default" href="{% url 'flight-airbase-add' %}">Add airbase</a></span></h3>
+<h5><quiet>An 'airbase' is anyplace with a runway. Besides physical attributes, an airbase has landing fees, retardant costs, and maybe some other things.</quiet></h5>
+        <div class='row'>
+        <div style='height:440px;border:thick solid black;'>
+        {% if entmap %}
+		{% endif %}
+        </div>
+        </div>
+      </div>
+  <div class="tab-pane fade{% if not form %} in active{% endif %}" id="one">
+<h3><a href="#zero" data-toggle="tab" style="text-decoration:none;color:rgb(0, 0, 0);"><i class="glyphicon glyphicon-road" style="color:gainsboro;"></i></a> {% if airbase_list %}<span class='ccalculated'>{{ airbase_list|length }}</span> <a href="#zero" data-toggle="tab" style="text-decoration:none;color:rgb(0, 0, 0);">Airbase{{ airbase_list|length|pluralize }}</a>{% else %}<span class='ccalculated'>0</span> Airbases{% endif %} <quiet>in</quiet> <span class='ccalculated'>{{ state_list|length }}</span> <a href="#zero" data-toggle="tab" style="text-decoration:none;color:rgb(0, 0, 0);">State{{state_list|length|pluralize}}</a> <span class="pull-right"><a class="btn btn-xs btn-default" href="{% url 'flight-airbase-add' %}">Add airbase</a></span></h3>
+<h5><quiet>An 'airbase' is anyplace with a runway. Besides physical attributes, an airbase has landing fees, retardant costs, and maybe some other things. Click on its </quiet><strong>Airport Code</strong><quiet> in the table below to get to an airbase's page.</quiet></h5>
+{% if airbase_list %}
+<div>
+ <table class="table table-bordered table-condensed table-hover s" id="s1">
+ 	<thead>
+	<th>Region</th>
+	<th>State</th>
+	<th>Name <quiet>and</quiet> Airport Code</th>
+	<th>Landing Fees</th>
+	<th>Retardant Prices</th>
+	<th>Flight Count</th>
+	<th>Ret Gal</th>
+ 	</thead>
+ 	<tbody>
+{% load tz %}
+{% for airbase in airbase_list %}
+	<tr>
+		<td>{% if airbase.region %}<a href="{% url 'flight-region' airbase.region %}">{{ airbase.region }}</a>{% else %}--{% endif %}{% if airbase.now %} {% timezone airbase.tz %}{{ airbase.now|date:'H:i' }}{% endtimezone %} {{ airbase.tzn }}{% endif %} </td>
+		<td><a href="{% url 'flight-state' airbase.st|lower %}">{{ airbase.st|upper }}</a>{% if not airbase.geom %}<a href={% url 'flight-airbase-edit' airbase.tla|upper %}>*</a>{% endif %} {% if request.user.is_superuser %}<a href={% url 'flight-airbase-permissions' airbase.tla|upper %}>*</a>{% endif %}</td>
+		<td><strong>{{ airbase.name }} (<a href="{% url 'flight-airbase-detail' airbase.tla %}">{{ airbase.tla }}</a>)</strong></td>
+		<td class='number'><ul class="list-unstyled">{% if airbase.lfee_list %}{% for rate in airbase.lfee_list %}
+		{% if forloop.first %}
+			<li><span>$<a href="{% url 'flight-airbase-lfeelist' airbase.tla %}">{{ rate.cost|floatformat:2|intcomma }}</a>/{{ rate.perwhat }}</span></li>
+		{% else %}
+			<li><span>$<a href="{% url 'flight-airbase-lfeelist' airbase.tla %}landingfee/">{{ rate.cost|floatformat:2|intcomma }}</a>/{{ rate.perwhat }}</span></li>
+		{% endif %}
+		{% endfor %}{% else %}<span class='unk small'>NO DATA</span>{% endif %}</ul></td>
+		<td class='number'><ul class="list-unstyled">{% if airbase.rfee_list %}{% for rate in airbase.rfee_list %}
+			{% if forloop.first %}
+				{% if rate.flat %}$<a href="{% url 'flight-airbase-rfeelist' airbase.tla|upper %}">{{ rate.flat|floatformat:2|intcomma }}</a>{% endif %}{% if rate.flat and rate.cost %} plus {% endif %}$<a href="{% url 'flight-airbase-rfeelist' airbase.tla|upper %}">{{ rate.cost|floatformat:2|intcomma }}</a>/gal {{ rate.rtype }} @ {{ rate.volume|intcomma }}gal<br />
+			{% else %}
+				{% if rate.flat %}$<a href="{% url 'flight-airbase-rfeelist' airbase.tla|upper %}">{{ rate.flat|floatformat:2|intcomma }}</a>{% endif %}{% if rate.flat and rate.cost %} plus {% endif %}$<a href="{% url 'flight-airbase-rfeelist' airbase.tla|upper %}">{{ rate.cost|floatformat:2|intcomma }}</a>/gal {{ rate.rtype }} @ {{ rate.volume|intcomma }}gal<br />
+			{% endif %}
+		{% endfor %}{% else %}<span class='unk small'>NO DATA</span>{% endif %}</ul></td>
+		<td class='number'><span class='ccalculated'>{% if airbase.trip_count %}{{ airbase.trip_count }}{% else %}0{% endif %}</span></td>
+		<td class='number'><span class='ccalculated'>{% if airbase.retardant_sum %}{{ airbase.retardant_sum|intcomma }}{% else %}0{% endif %}</span></td>
+	</tr>
+{% endfor %}
+ 	</tbody>
+ </table>
+</div>
+{% else %}
+<div>
+	No airbases. What?
+</div>
+{% endif %}
+</div>
+</div>
+</div>
+{% endblock %}
+

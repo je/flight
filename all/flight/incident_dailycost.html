@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet/less" type="text/css" href="/static/b/bootstrap.less" />
+    <script src="/static/b/less-1.3.3.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="/static/b/glyphicons.css" />
+
+{% block extrahead %}
+<link href='//fonts.googleapis.com/css?family=Carter+One' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="/static/fa-4.0.0/css/font-awesome.min.css">
+<style type="text/css">
+styled {font-family: 'Carter One', cursive;}
+
+quiet {color:#666;} /* grey */
+ccalculated {color:#8B0000;} /* DarkRed */
+dcalculated {color:#006400;} /* DarkGreen */
+tcalculated {color:#8B0000; width:50px; margin-right:auto; text-align:right;}
+tm {width:50px; float:right; margin-right:auto; text-align:right;}
+rt {width:60px; float:right; margin-right:auto; text-align:right;}
+lt {width:60px; margin-right:auto; text-align:right;}
+label.text {cursor: text;}
+span.lt {width:90px;}
+unk {color:white;background-color:black;} /* white on black */
+td.plane {width:100px;}
+td.date {width:80px;}
+td.ex {background-color:white;border-left:thick solid #FF4500;}
+td.total {background-color:white;border-top:thick solid;text-align:right;}
+td.number {text-align:right;}
+td.blank {background-color:white;}
+tr.zg {background-color: #f9f9f9;} /* zebra */
+tr.zb {background-color: #F0F8FF;} /* zebra */
+dogreen {color:#556B2F;} /* DarkOliveGreen */
+fgreen {color:#228B22;} /* ForestGreen */
+ored {color:#FF4500;} /* OrangeRed */
+/* a:visited {color:#4B0082;}  Indigo */
+#id_effectivedate_0 {width:80px;}
+#id_effectivedate_1 {width:50px; margin-left:5px;}
+#id_dailyavailstart_0 {display:none;}
+#xid_dailyavailstop_0 {display:none;}
+#xid_nonavailstart_0 {display:none;}
+#xid_nonavailstop_0 {display:none;}
+#id_planestart_0 {display:none;}
+#id_planestop_0 {display:none;}
+
+@media print {
+      .visible-print  { display: inherit !important; }
+      .hidden-print   { display: none !important; }
+      a:link:after, a:visited:after {
+        content: "";
+      }
+    }
+
+.fa-rotate-45{filter:progid:DXImageTransform.Microsoft.BasicImage(rotation=1);-webkit-transform:rotate(45deg);-moz-transform:rotate(45deg);-ms-transform:rotate(45deg);-o-transform:rotate(45deg);transform:rotate(45deg)}
+
+</style>
+
+{% endblock %}
+
+{% block favico %} 
+{% endblock %}
+  </head>
+  <body>
+<div class='container' style="margin-left:50px;">
+
+{% block messages %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert{% if message.tags %} alert-{{ message.tags }}{% endif %}" style="margin-top:15px;font-size:14px;">
+<button type="button" class="close" data-dismiss="alert">&times;</button>
+{% if message.tags %}<strong>{{ message.tags|title }}:</strong> {% endif %}{{ message|safe }}
+</div>
+{% endfor %}
+{% endif %}
+{% endblock %}
+
+{% block title %}
+<title>Incident Daily Cost {{ object.name }}{% if adate %} &sect {% if year %}{{ adate|date:"Y" }}{% elif mo %}{{ adate|date:"Y M" }}{% else %}{{ adate|date:"Y M d" }}{% endif %}{% if bdate %} - {{ bdate|date:"Y M d" }}{% endif %}{% else %}{% endif %}</title>
+{% endblock %}
+
+{% block content %}
+
+{% block mtitle %}
+<br />
+{% endblock %}
+
+{% block mhead %}
+{% load humanize %}
+{% with object as incident %}
+
+<div class='row'>
+<div class='col-md-12'>
+<h3><quiet>Incident Daily Cost Summary</quiet></h3>
+ <table class="table table-bordered table-condensed">
+	<tbody>
+	<tr>
+		<th>Base:</th><td colspan="2">*</td>
+		<th></th><td colspan="2"></td>
+		<th>Fire Cost Summary</th><td colspan="2">{% if adate %}<a href="/incident/{{ incident.name }}/{{ incident.resourceorder }}/{{ adate|date:"Y-m-d" }}/">{{ adate|date:"Y M d" }}<br />{{ adate|date:"l" }}</a>{% else %}All Fire Dates{% endif %}</td>
+	</tr>
+	<tr>
+		<th>Fire:</th><td colspan="2"><a href="/incident/{{ incident.name }}/{{ incident.resourceorder }}/">{{ incident.name }}</a></td>
+		<th>Override:</th><td colspan="2">{{ incident.userunit }}</td>
+		<th></th><td colspan="2">{% if adate %}<a href="/incident/{{ incident.name }}/{{ incident.resourceorder }}/{{ adate|date:"Y-m-d" }}/">{{ adate|date:"Y M d" }}<br />{{ adate|date:"l" }}</a>{% else %}All Dates{% endif %}</td>
+	</tr>
+	<tr>
+		<th>Order #:</th><td colspan="2">{{ incident.resourceorder }}</td>
+		<th>Mgmt Code:</th><td colspan="2">{{ incident.firechargenum }}</td>
+		<th></th><td colspan="2"></td>
+	</tr>
+	</tbody>
+</table>
+
+{% regroup mission_list|dictsort:"startdate" by startdate as date_list %}
+<table class="table table-bordered table-condensed">
+{% for d in date_list %}
+	<thead>
+	</thead>
+	<thead>
+	{% if not forloop.first %}<tr><th colspan="9"></th></tr>{% endif %}
+	<tr><th colspan="9">{{ d.grouper }}</th></tr>
+	<th>Aircraft</th>
+	<th>Flight Time</th>
+	<th>Flight Cost</th>
+	<th>Landing Cost</th>
+	<th>Standby Cost</th>
+	<th>Move Cost</th>
+	<th>Retardant Gallons</th>
+	<th>Retardant Cost</th>
+	<th>Total Cost</th>
+	</thead>
+	<tbody>
+	{% for m in d.list %}
+	<tr>
+		<td colspan="1"><a href="/airplane/{{ m.airplane.tail }}/{{ m.airplane.name }}/">{{ m.airplane.name }}</a></td>
+		<td class='number' colspan="1"><span class='ccalculated'>{% if m.ftime %}{{ m.ftime|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='number' colspan="1">$<span class='dcalculated'>{% if m.fcost %}{{ m.fcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='number' colspan="1">$<span class='dcalculated'>{% if m.lcost %}{{ m.lcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='number' colspan="1">$<span class='dcalculated'>{% if m.ecost %}{{ m.ecost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='number' colspan="1">$<span class='dcalculated'>{% if m.mcost %}{{ m.mcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='number' colspan="1"><span class='ccalculated'>{% if m.retardant_sum %}{{ m.retardant_sum|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='number' colspan="1">$<span class='dcalculated'>{% if m.rcost %}{{ m.rcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='number' colspan="1">$<span class='dcalculated'>{% if m.flsmrcost %}{{ m.flsmrcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+	</tr>
+	{% endfor %}
+
+	{% if adate %}
+	<tr>
+		<th class='total' colspan="1">Daily Total</th>
+		<td class='total number' colspan="1"><span class='ccalculated'>{% if incident.ftime %}{{ incident.ftime|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1">$<span class='dcalculated'>{% if incident.fcost %}{{ incident.fcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1">$<span class='dcalculated'>{% if incident.lcost %}{{ incident.lcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1">$<span class='dcalculated'>{% if incident.ecost %}{{ incident.ecost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1">$<span class='dcalculated'>{% if incident.mcost %}{{ incident.mcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1"><span class='ccalculated'>{% if incident.rgal %}{{ incident.rgal|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1">$<span class='dcalculated'>{% if incident.rcost %}{{ incident.rcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1">$<span class='dcalculated'>{% if incident.flsmrcost %}{{ incident.flsmrcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+	</tr>
+	{% endif %}
+
+	{% for dx in object.datesums %}
+	{% ifequal dx.date d.grouper %}
+	<tr>
+		<th class='total' colspan="1">Daily Total</th>
+		<td class='total number' colspan="1"><span class='ccalculated'>{% if dx.ftime %}{{ dx.ftime|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1">$<span class='dcalculated'>{% if dx.fcost %}{{ dx.fcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1">$<span class='dcalculated'>{% if dx.lcost %}{{ dx.lcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1">$<span class='dcalculated'>{% if dx.scost %}{{ dx.scost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1">$<span class='dcalculated'>{% if dx.mcost %}{{ dx.mcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1"><span class='ccalculated'>{% if dx.rgal %}{{ dx.rgal|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1">$<span class='dcalculated'>{% if dx.rcost %}{{ dx.rcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1">$<span class='dcalculated'>{% if dx.flsmrcost %}{{ dx.flsmrcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+	</tr>
+	{% endifequal %}
+	{% endfor %}
+
+{% endfor %}
+	</tr>
+	</tbody>
+{% if not adate %}
+	<thead>
+		{% if not adate %}<tr><th colspan="9"></th></tr>{% endif %}
+		<tr><th colspan="9">{% if not adate %}All Dates{% endif %}</th></tr>
+		<th></th>
+		<th>Flight Time</th>
+		<th>Flight Cost</th>
+		<th>Landing Cost</th>
+		<th>Standby Cost</th>
+		<th>Move Cost</th>
+		<th>Retardant Gallons</th>
+		<th>Retardant Cost</th>
+		<th>Total Cost</th>
+	</thead>
+	<tbody>
+	<tr>
+		<th class='total' colspan="1">{% if not adate %}Incident Total{% else %}Daily Total{% endif %}</th>
+		<td class='total number' colspan="1"><span class='ccalculated'>{% if incident.ftime %}{{ incident.ftime|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1">$<span class='dcalculated'>{% if incident.fcost %}{{ incident.fcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1">$<span class='dcalculated'>{% if incident.lcost %}{{ incident.lcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1">$<span class='dcalculated'>{% if incident.ecost %}{{ incident.ecost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1">$<span class='dcalculated'>{% if incident.mcost %}{{ incident.mcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1"><span class='ccalculated'>{% if incident.rgal %}{{ incident.rgal|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1">$<span class='dcalculated'>{% if incident.rcost %}{{ incident.rcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+		<td class='total number' colspan="1">$<span class='dcalculated'>{% if incident.flsmrcost %}{{ incident.flsmrcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+	</tr>
+	</tbody>
+{% endif %}
+</table>
+
+</div>
+</div>
+
+{% endwith %} 
+{% endblock %}
+
+{% block missionhelp %}
+{% if request.user.is_superuser %}
+
+{{ aobject.datesums }}<br>
+
+{% endif %}
+{% endblock %}
+{% endblock %}
+<div>
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+  <script src="/static/b/js/bootstrap.min.js"></script>
+  </body>
+</html>

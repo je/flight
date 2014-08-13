@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>FLiGHT</title>
+<link rel="stylesheet" href="/static/fa-4.0.0/css/font-awesome.min.css">
+<style>
+
+@import url(//fonts.googleapis.com/css?family=Yanone+Kaffeesatz:400,700);
+
+body {
+  font-family: "Helvetica Neue";
+  margin: 40px 40px;
+  width: 960px;
+  min-height: 2000px;
+}
+
+#body {
+  position: relative;
+}
+
+footer {
+  padding: 2em 0 1em 0;
+  font-size: 12px;
+}
+
+h1 {
+  font-size: 96px;
+  margin-top: .3em;
+  margin-bottom: 0;
+}
+
+h1 + h2 {
+  margin-top: 0;
+}
+
+h2 {
+  font-weight: 400;
+  font-size: 28px;
+}
+
+h1, h2 {
+  font-family: "Yanone Kaffeesatz";
+  text-rendering: optimizeLegibility;
+}
+
+#body > p {
+  line-height: 1.5em;
+  width: 640px;
+  text-rendering: optimizeLegibility;
+}
+
+#charts {
+  padding: 10px 0;
+}
+
+.chart {
+  display: inline-block;
+  height: 151px;
+  margin-bottom: 20px;
+}
+
+.reset {
+  padding-left: 1em;
+  font-size: smaller;
+  color: #ccc;
+}
+
+.background.bar {
+  fill: #ccc;
+}
+
+.foreground.bar {
+  fill: black;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  font: 10px sans-serif;
+}
+
+.brush rect.extent {
+  fill: black;
+  fill-opacity: .125;
+}
+
+.brush .resize path {
+  fill: #eee;
+  stroke: #666;
+}
+
+#hour-chart {
+  width: 260px;
+}
+
+#delay-chart {
+  width: 230px;
+}
+
+#distance-chart {
+  width: 420px;
+}
+
+#date-chart {
+  width: 920px;
+}
+
+#airplane-chart {
+  width: 920px;
+}
+
+#incident-chart {
+  width: 920px;
+}
+
+#flight-list {
+  min-height: 1024px;
+}
+
+#flight-list .date,
+#flight-list .day {
+  margin-bottom: .4em;
+}
+
+#flight-list .flight {
+  line-height: 1.5em;
+  background: #eee;
+  margin-bottom: 1px;
+}
+
+#flight-list .flight div {
+  display: inline-block;
+  padding-right: 5px;
+}
+
+#flight-list div.incident {
+  width: 300px;
+}
+
+#flight-list div.airplane {
+  width: 120px;
+}
+
+#flight-list div.aid {
+  width: 20px;
+}
+
+#flight-list div.origin {
+  width: 35px;
+}
+
+#flight-list div.ftype {
+  width: 15px;
+  padding-right: 5px;
+}
+
+#flight-list div.destination {
+  width: 40px;
+}
+
+#flight-list div.wide {
+  width: 130px;
+  font-size: 0.7em;
+}
+
+#flight-list div.thin {
+  width: 0px;
+}
+#flight-list .time,
+#flight-list .stop {
+  width: 40px;
+  padding-right: 0px;
+}
+
+#flight-list div.ftime {
+  width: 80px;
+  text-align: right;
+}
+
+#flight-list div.retgal{
+  width: 100px;
+  text-align: right;
+}
+
+#flight-list .depart {
+  background: rgb(217, 237, 247); // info blue
+}
+
+#flight-list .f {
+  background: rgb(249, 249, 249); // typical grey
+}
+
+#flight-list .move {
+  background: rgb(223, 240, 216); // success green
+}
+
+#flight-list .standby {
+  background: rgb(252, 248, 227); // warn yellow
+}
+
+#flight-list .extended {
+  background: rgb(252, 248, 227); // warn yellow
+}
+
+aside {
+  position: absolute;
+  left: 740px;
+  font-size: smaller;
+  width: 220px;
+}
+
+.fa-rotate-45{filter:progid:DXImageTransform.Microsoft.BasicImage(rotation=1);-webkit-transform:rotate(45deg);-moz-transform:rotate(45deg);-ms-transform:rotate(45deg);-o-transform:rotate(45deg);transform:rotate(45deg)}
+
+</style>
+
+<div id="body">
+<h2>Flight Report</h2>
+Some questions to consider: How does time-of-day correlate with <a href="javascript:filter([null, null, [2750,4000], null, null])">retardant gallons</a>? Are <a href="javascript:filter([null, [200, 300], null, null, null])">longer</a> or <a href="javascript:filter([null, [1,30], null, null, null])">shorter</a> flights more likely to load retardant? What happened in <a href="javascript:filter([null, null, null, [new Date(2013, 7, 01), new Date(2013, 7, 31)]], null)">2013 August</a>? How do flight patterns differ between <a href="javascript:filter([[2, 9], null, null, null, null])">mornings</a> and <a href="javascript:filter([[20, 24], null, null, null, null])">nights</a>? Airplanes <a href="javascript:filter([null, null, null, null, [1,11]])">1-10</a>? <a href="javascript:filter([null, null, null, null, [11,21]])">11-20</a>? <a href="javascript:filter([null, null, null, null, [21,31]])">21-30</a>? <a href="javascript:filter([null, null, null, null, [31,41]])">31-40</a>? <a href="javascript:filter([null, null, null, null, [41,51]])">41-50</a>? <a href="javascript:filter([null, null, null, null, [51,61]])">51-60</a>? <a href="javascript:filter([null, null, null, null, [61,71]])">61-70</a>? <a href="javascript:filter([null, null, null, null, [71,81]])">71-80</a>? <a href="javascript:filter([null, null, null, null, [81,91]])">81-90</a>? <a href="javascript:filter([null, null, null, null, [91,100]])">91-99</a>? <a href="javascript:filter([null, null, null, null, [100,101]])">100</a>? <a href="javascript:filter([null, null, null, null, [108,109]])">108</a>?
+
+
+<div id="charts">
+  <div id="hour-chart" class="chart">
+    <div class="title">Time of Day <span id="subhour">-</span></div>
+  </div>
+  <div id="delay-chart" class="chart">
+    <div class="title">Flight Time (min) <span id="subdelay">-</span></div>
+  </div>
+  <div id="distance-chart" class="chart">
+    <div class="title">Retardant (gal) <span id="subdistance">-</span></div>
+  </div>
+  <div id="date-chart" class="chart">
+    <div class="title">Date <span id="subdate">-</span></div>
+  </div>
+  <div id="airplane-chart" class="chart">
+    <div class="title">Airplane <span id="subplane">-</span></div>
+  </div>
+</div>
+
+<aside id="totals"><span id="active">-</span> of <span id="total">-</span> flights selected.</aside>
+
+<div id="lists">
+  <div id="flight-list" class="list"></div>
+</div>
+
+
+</div>
+
+<script src="/static/d3/crossfilter.v1.min.js"></script>
+<script src="/static/d3/d3.v3.min.js"></script>
+<script>
+
+// (It's CSV, but GitHub Pages only gzip's JSON at the moment.)
+d3.csv("/flights.csv", function(error, flights) {
+
+  // Various formatters.
+  var formatNumber = d3.format(",d"),
+      formatChange = d3.format(",d"),
+      formatDate = d3.time.format("%B %d, %Y"),
+      formatYr = d3.time.format("%Y"),
+      formatTime = d3.time.format("%H:%M");
+
+  // A nest operator, for grouping the flight list.
+  var nestByDate = d3.nest()
+      .key(function(d) { return d3.time.day(d.date); });
+
+  // A little coercion, since the CSV is untyped.
+  flights.forEach(function(d, i) {
+    d.index = i;
+    d.date = parseDate(d.date);
+    d.ftime = +d.ftime;
+    d.retgal = +d.retgal;
+  });
+
+  // Create the crossfilter for the relevant dimensions and groups.
+  var flight = crossfilter(flights),
+      all = flight.groupAll(),
+      date = flight.dimension(function(d) { return d.date; }),
+      dates = date.group(d3.time.day),
+      maxdate = d3.max(flights, function(d) { return +d.date;} ),
+      mindate = d3.min(flights, function(d) { return +d.date;} ),
+      maxyr = 2014,
+      minyr = 2005,
+      hour = flight.dimension(function(d) { return d.date.getHours() + d.date.getMinutes() / 60; }),
+      hours = hour.group(Math.floor),
+      //aid = flight.dimension(function(d) { return d.aid; }),
+      aid = flight.dimension(function(d) { return parseInt(d.aid); }),
+      aids = aid.group(),
+      maxaid = d3.max(flights, function(d) { return +d.aid;} ),
+      minaid = d3.min(flights, function(d) { return +d.aid;} ),
+      airplane = flight.dimension(function(d) { return d.airplane; }),
+      airplanes = airplane.group(function(d) { return airplane; }),
+      incident = flight.dimension(function(d) { return d.incident; }),
+      incidents = incident.group(function(d) { return incident; }),
+      ftime = flight.dimension(function(d) { return Math.max(0, Math.max(0, d.ftime)); }),
+      ftimes = ftime.group(function(d) { return Math.floor(d / 10) * 10; }),
+      retgal = flight.dimension(function(d) { return Math.max(0, d.retgal); }),
+      retgals = retgal.group(function(d) { return Math.floor(d / 50) * 50; });
+
+  var charts = [
+
+    barChart()
+        .dimension(hour)
+        .group(hours)
+      .x(d3.scale.linear()
+        .domain([0, 24])
+        .rangeRound([0, 240])),
+
+    barChart()
+        .dimension(ftime)
+        .group(ftimes)
+      .x(d3.scale.linear()
+        .domain([0, 300])
+        .rangeRound([0, 210])),
+
+    barChart()
+        .dimension(retgal)
+        .group(retgals)
+      .x(d3.scale.linear()
+        .domain([0, 4000])
+        .rangeRound([0, 400])),
+
+    barChart()
+        .dimension(date)
+        .group(dates)
+        .round(d3.time.day.round)
+      .x(d3.time.scale()
+        .domain([new Date(minyr, 0, 1), new Date(maxyr, 11, 31)])
+        //.domain(d3.extent(dates, function(d) { return d; }))
+        .rangeRound([0, 10 * 90])),
+        //.filter([mindate, maxdate]),
+
+    barChart()
+        .dimension(aid)
+        .group(aids)   
+      .x(d3.scale.linear()
+        .domain([1, 108])
+        .rangeRound([0, 900])
+        //.rangeRoundBands([920, 0.5])
+        ),
+
+//       .x(d3.scale.ordinal()
+//        .domain(flights.map(function (d) {return d.airplane; }))
+          //.domain(aArray)
+//        .rangeRoundBands([920, 0.5]))
+
+  ];
+
+  // Given our array of charts, which we assume are in the same order as the
+  // .chart elements in the DOM, bind the charts to the DOM and render them.
+  // We also listen to the chart's brush events to update the display.
+  var chart = d3.selectAll(".chart")
+      .data(charts)
+      .each(function(chart) { chart.on("brush", renderAll).on("brushend", renderAll); });
+
+  // Render the initial lists.
+  var list = d3.selectAll(".list")
+      .data([flightList]);
+
+  // Render the total.
+  d3.selectAll("#total")
+      .text(formatNumber(flight.size()));
+
+  renderAll();
+
+  // Renders the specified chart or list.
+  function render(method) {
+    d3.select(this).call(method);
+  }
+
+  // Whenever the brush moves, re-rendering everything.
+  function renderAll() {
+    chart.each(render);
+    list.each(render);
+    d3.select("#active").text(formatNumber(all.value()));
+    d3.select("#subhour").text();
+    d3.select("#subdelay").text();
+    d3.select("#subdistance").text();
+    d3.select("#subdate").text();
+    d3.select("#subplane").text();
+  }
+
+  // Like d3.time.format, but faster.
+  function parseDate(d) {
+    return new Date(
+        d.substring(0, 4),
+        d.substring(4, 6) - 1,
+        d.substring(6, 8),
+        d.substring(8, 10),
+        d.substring(10, 12));
+  }
+
+  window.filter = function(filters) {
+    filters.forEach(function(d, i) { charts[i].filter(d); });
+    renderAll();
+  };
+
+  window.reset = function(i) {
+    charts[i].filter(null);
+    renderAll();
+  };
+
+  function flightList(div) {
+    var flightsByDate = nestByDate.entries(date.top(1000));
+
+    div.each(function() {
+      var date = d3.select(this).selectAll(".date")
+          .data(flightsByDate, function(d) { return d.key; });
+
+      date.enter().append("div")
+          .attr("class", "date")
+        .append("div")
+          .attr("class", "day")
+          .text(function(d) { return formatDate(d.values[0].date); });
+
+      date.exit().remove();
+
+      var flight = date.order().selectAll(".flight")
+          .data(function(d) { return d.values; }, function(d) { return d.index; });
+
+      var flightEnter = flight.enter().append("div")
+          .attr("class", "flight")
+          .classed("depart", function(d) { return d.ftype == "" && d.destination == "--"; })
+          .classed("f", function(d) { return d.ftype == "f" && d.destination != "--"; })
+          .classed("move", function(d) { return d.ftype == "m"; })
+          .classed("standby", function(d) { return d.ftype == "s"; })
+          .classed("other", function(d) { return d.ftype == "o"; })
+          .classed("divert", function(d) { return d.ftype == "d"; })
+          .classed("extended", function(d) { return d.ftype == "x"; });
+
+      flightEnter.append("div")
+          .attr("class", "airplane")
+          .text(function(d) { return d.airplane; });
+
+      flightEnter.append("div")
+          .attr("class", "aid")
+          .text(function(d) { return d.aid; });
+
+      flightEnter.append("div")
+          .attr("class", "incident")
+          .text(function(d) { return d.incident; });
+
+      flightEnter.append("div")
+          //.attr("class", "origin")
+          .classed("origin", function(d) { return d.ftype != "x"; })
+          .classed("wide", function(d) { return d.ftype == "x"; })
+          //.text(function(d) { return d.origin; });
+          .classed("fa fa-cloud", function(d) { return d.ftype == "d"; })
+          .text(function(d) { if (d.ftype == "f") { return d.origin; } else if (d.ftype == "m") { return d.origin; } else if (d.ftype == "s") { return d.origin; } else if (d.ftype == "x") { return "PAYS EXTENDED FROM"; } else if (d.ftype == "d") { return ""; } else if (d.ftype == "") { return d.origin; }});
+
+      flightEnter.append("div")
+          .attr("class", "time")
+          .text(function(d) { return formatTime(d.date); });
+
+      flightEnter.append("div")
+          //.attr("class", "ftype")
+          .classed("ftype", function(d) { return d.ftype != "x"; })
+          .classed("thin", function(d) { return d.ftype == "x"; })
+          .append("i")
+          .classed("fa fa-random fa", function(d) { return d.ftype == "m"; })
+          .classed("fa fa-clock-o fa", function(d) { return d.ftype == "s"; })
+          .classed("fa fa-plane fa-rotate-45", function(d) { return d.ftype == "d"; })
+          .classed("fa fa-plane fa-rotate-45", function(d) { return d.ftype == "f" || d.ftype == "d" || d.ftype == ""; })
+          //.text(function(d) { return d.ftype; })
+          //.classed("fa fa-usd", function(d) { return d.ftype == "x"; })
+          .text(function(d) { if (d.ftype == "f") { return ""; } else if (d.ftype == "m") { return ""; } else if (d.ftype == "s") { return ""; } else if (d.ftype == "x") { return ""; } else if (d.ftype == "d") { return ""; } });
+         // .text(function(d) { if (d.ftype == "m") { return "M"; } })
+          //.text(function(d) { if (d.ftype == "s") { return "S"; } })
+          //.text(function(d) { if (d.ftype == "x") { return "X"; } });
+          //.text( function(d) { return d.ftype; });
+
+      flightEnter.append("div")
+          .attr("class", "stop")
+          .text(function(d) { if (d.stop != "--") { return formatTime(parseDate(d.stop)) } });
+
+      flightEnter.append("div")
+          //.attr("class", "destination")
+          .classed("destination", function(d) { return d.ftype != "x"; })
+          .classed("thin", function(d) { return d.ftype == "x"; })
+          //.text(function(d) { return d.destination; });
+          .text(function(d) { if (d.ftype == "f") { return d.destination; } else if (d.ftype == "m") { return ""; } else if (d.ftype == "s") { return ""; } else if (d.ftype == "x") { return ""; } else if (d.ftype == "d") { return ""; } });
+
+      flightEnter.append("div")
+          .attr("class", "ftime")
+          //.classed("early", function(d) { return d.ftime > 0; })
+          //.text(function(d) { return formatChange(d.ftime) + " min"; });
+          .text(function(d) { if (d.stop != "--") { return formatChange(d.ftime) + " min" } });
+
+      flightEnter.append("div")
+          .attr("class", "retgal")
+          .text(function(d) { if (d.ftype == "x") { return ""; } else { return formatNumber(d.retgal) + " gal"; }});
+
+      flight.exit().remove();
+
+      flight.order();
+    });
+  }
+
+  function barChart() {
+    if (!barChart.id) barChart.id = 0;
+
+    var margin = {top: 10, right: 10, bottom: 20, left: 10},
+        x,
+        y = d3.scale.linear().range([100, 0]),
+        id = barChart.id++,
+        axis = d3.svg.axis().orient("bottom"),
+        brush = d3.svg.brush(),
+        brushDirty,
+        dimension,
+        group,
+        round;
+
+
+    function chart(div) {
+      var width = x.range()[1],
+          height = y.range()[0];
+
+      y.domain([0, group.top(1)[0].value]);
+
+      div.each(function() {
+        var div = d3.select(this),
+            g = div.select("g");
+
+        // Create the skeletal chart.
+        if (g.empty()) {
+          div.select(".title").append("a")
+              .attr("href", "javascript:reset(" + id + ")")
+              .attr("class", "reset")
+              .text("reset")
+              .style("display", "none");
+
+          g = div.append("svg")
+              .attr("width", width + margin.left + margin.right)
+              .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+              .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+          g.append("clipPath")
+              .attr("id", "clip-" + id)
+            .append("rect")
+              .attr("width", width)
+              .attr("height", height);
+
+          g.selectAll(".bar")
+              .data(["background", "foreground"])
+            .enter().append("path")
+              .attr("class", function(d) { return d + " bar"; })
+              .datum(group.all());
+
+          g.selectAll(".foreground.bar")
+              .attr("clip-path", "url(#clip-" + id + ")");
+
+          if (id != 9)
+            g.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(axis);
+
+          if (id == 9)
+            g.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(axis)
+                .selectAll("text")  
+                  .style("text-anchor", "end")
+                  //.attr("dx", "-.8em")
+                  //.attr("dy", ".15em")
+                  .attr("transform", function(d) {
+                      return "rotate(-90)" 
+                      });
+
+          // Initialize the brush component with pretty resize handles.
+          var gBrush = g.append("g").attr("class", "brush").call(brush);
+          gBrush.selectAll("rect").attr("height", height);
+          gBrush.selectAll(".resize").append("path").attr("d", resizePath);
+        }
+
+        // Only redraw the brush if set externally.
+        if (brushDirty) {
+          brushDirty = false;
+          g.selectAll(".brush").call(brush);
+          div.select(".title a").style("display", brush.empty() ? "none" : null);
+          if (brush.empty()) {
+            g.selectAll("#clip-" + id + " rect")
+                .attr("x", 0)
+                .attr("width", width);
+          } else {
+            var extent = brush.extent();
+            g.selectAll("#clip-" + id + " rect")
+                .attr("x", x(extent[0]))
+                .attr("width", x(extent[1]) - x(extent[0]));
+          }
+        }
+
+        g.selectAll(".bar").attr("d", barPath);
+      });
+
+      function barPath(groups) {
+        var path = [],
+            i = -1,
+            n = groups.length,
+            d;
+        while (++i < n) {
+          d = groups[i];
+          path.push("M", x(d.key), ",", height, "V", y(d.value), "h9V", height);
+        }
+        return path.join("");
+      }
+
+      function resizePath(d) {
+        var e = +(d == "e"),
+            x = e ? 1 : -1,
+            y = height / 3;
+        return "M" + (.5 * x) + "," + y
+            + "A6,6 0 0 " + e + " " + (6.5 * x) + "," + (y + 6)
+            + "V" + (2 * y - 6)
+            + "A6,6 0 0 " + e + " " + (.5 * x) + "," + (2 * y)
+            + "Z"
+            + "M" + (2.5 * x) + "," + (y + 8)
+            + "V" + (2 * y - 8)
+            + "M" + (4.5 * x) + "," + (y + 8)
+            + "V" + (2 * y - 8);
+      }
+    }
+
+    brush.on("brushstart.chart", function() {
+      var div = d3.select(this.parentNode.parentNode.parentNode);
+      div.select(".title a").style("display", null);
+    });
+
+    brush.on("brush.chart", function() {
+      var g = d3.select(this.parentNode),
+          extent = brush.extent();
+      if (round) g.select(".brush")
+          .call(brush.extent(extent = extent.map(round)))
+        .selectAll(".resize")
+          .style("display", null);
+      g.select("#clip-" + id + " rect")
+          .attr("x", x(extent[0]))
+          .attr("width", x(extent[1]) - x(extent[0]));
+      dimension.filterRange(extent);
+    });
+
+    brush.on("brushend.chart", function() {
+      if (brush.empty()) {
+        var div = d3.select(this.parentNode.parentNode.parentNode);
+        div.select(".title a").style("display", "none");
+        div.select("#clip-" + id + " rect").attr("x", null).attr("width", "100%");
+        dimension.filterAll();
+      }
+    });
+
+    chart.margin = function(_) {
+      if (!arguments.length) return margin;
+      margin = _;
+      return chart;
+    };
+
+    chart.x = function(_) {
+      if (!arguments.length) return x;
+      x = _;
+      axis.scale(x);
+      brush.x(x);
+      return chart;
+    };
+
+    chart.y = function(_) {
+      if (!arguments.length) return y;
+      y = _;
+      return chart;
+    };
+
+    chart.dimension = function(_) {
+      if (!arguments.length) return dimension;
+      dimension = _;
+      return chart;
+    };
+
+    chart.filter = function(_) {
+      if (_) {
+        brush.extent(_);
+        dimension.filterRange(_);
+      } else {
+        brush.clear();
+        dimension.filterAll();
+      }
+      brushDirty = true;
+      return chart;
+    };
+
+    chart.group = function(_) {
+      if (!arguments.length) return group;
+      group = _;
+      return chart;
+    };
+
+    chart.round = function(_) {
+      if (!arguments.length) return round;
+      round = _;
+      return chart;
+    };
+
+    return d3.rebind(chart, brush, "on");
+  }
+
+});
+
+</script>

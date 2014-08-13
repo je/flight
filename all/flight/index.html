@@ -1,0 +1,978 @@
+{% extends "base2.html" %}
+ 
+{% block title %}
+<title>FLiGHT</title>
+{% endblock %} 
+
+{% block extrahead %}
+{% if request.user.is_superuser and entmap %}
+{% endif %}
+{% if request.user.is_superuser and entmap %}
+  <link rel="stylesheet" href="/static/leaflet/leaflet.css" />
+  <script src="/static/leaflet/leaflet.js"></script>
+  <script src="/static/leaflet/leaflet-providers.js"></script>
+{% endif %}
+<!--[if gte IE 9 ]><link rel="stylesheet" href="/static/fa-4.0.0/css/font-awesome.min.css"><![endif]--> 
+<!--[if !IE]><!--><link rel="stylesheet" href="/static/fa-4.0.0/css/font-awesome.min.css"><!--<![endif]-->
+<!--[if lt IE 9 ]><link href="/static/b-3.0.3/glyphicon.css" rel="stylesheet"><![endif]--> 
+<link href="/static/one-page-wonder.css" rel="stylesheet">
+<style type="text/css">
+/* Custom container */
+.container { padding: 0 15px; margin: 0 auto; width: 100%;}
+.row { padding: 0px; margin: 0 0;}
+.map {height:440px;border:thick solid black;}
+.navbar-nav > li > a {padding-top:5px !important; padding-bottom:5px !important;}
+h3 {margin-top:5px;}
+
+quiet {color:#666;} /* grey */
+.ccalculated {color:#8B0000;} /* DarkRed */
+.dcalculated {color:#006400;} /* DarkGreen */
+.tcalculated {color:#8B0000; width:50px; margin-right:auto; text-align:right;}
+.tm {width:50px; float:right; margin-right:auto; text-align:right;}
+.rt {width:60px; float:right; margin-right:auto; text-align:right;}
+.lt {width:60px; margin-right:auto; text-align:right;}
+label.text {cursor: text;}
+span.lt {width:90px;}
+.unk {color:white;background-color:black;} /* white on black */
+td.plane {width:100px;}
+td.date1 {width:80px;}
+td.date2 {width:80px;}
+td.ex {background-color:white;border-left:thick solid #FF4500;}
+td.total {background-color:white;border-top:thick solid;text-align:right;}
+tr.total {background-color:white;border-top:thick solid;text-align:right;}
+td.number {text-align:right;}
+td.blank {background-color:white;}
+tr.zg {background-color: #f9f9f9;} /* zebra */
+tr.zb {background-color: #F0F8FF;} /* zebra */
+.dogreen {color:#556B2F;} /* DarkOliveGreen */
+.fgreen {color:#228B22;} /* ForestGreen */
+.ored {color:#FF4500;} /* OrangeRed */
+/* a:visited {color:#4B0082;}  Indigo */
+#id_effectivedate_0 {width:80px;}
+#id_effectivedate_1 {width:50px; margin-left:5px;}
+#id_dailyavailstart_0 {display:none;}
+#xid_dailyavailstop_0 {display:none;}
+#xid_nonavailstart_0 {display:none;}
+#xid_nonavailstop_0 {display:none;}
+#id_planestart_0 {display:none;}
+#id_planestop_0 {display:none;}
+
+table.s .tablesorter-header {
+  cursor: pointer;
+}
+table.s .tablesorter-header:after {
+  content: "";
+  float: right;
+  margin-top: 7px;
+  border-width: 0 4px 4px;
+  border-style: solid;
+  border-color: #000000 transparent;
+  visibility: hidden;
+}
+table.s .tablesorter-headerSortUp, table.s .tablesorter-headerSortDown {
+  background-color: #f7f7f9;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+}
+table.s .tablesorter-header:hover:after {
+  visibility: visible;
+}
+table.s .tablesorter-headerSortDown:after, table.s .tablesorter-headerSortDown:hover:after {
+  visibility: visible;
+  filter: alpha(opacity=60);
+  -moz-opacity: 0.6;
+  opacity: 0.6;
+}
+table.s .tablesorter-headerSortUp:after {
+  border-bottom: none;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid #000000;
+  visibility: visible;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  filter: alpha(opacity=60);
+  -moz-opacity: 0.6;
+  opacity: 0.6;background-color:white;border-top:thick solid;
+}
+
+    img.olTileImage {
+        max-width: none;
+    }
+
+    .olLayerGooglePoweredBy {
+      display: none;
+    }
+
+@media print {
+      .visible-print  { display: inherit !important; }
+      .hidden-print   { display: none !important; }
+      a:link:after, a:visited:after {
+        content: "";
+      }
+    }
+
+.fa-rotate-45{filter:progid:DXImageTransform.Microsoft.BasicImage(rotation=1);-webkit-transform:rotate(45deg);-moz-transform:rotate(45deg);-ms-transform:rotate(45deg);-o-transform:rotate(45deg);transform:rotate(45deg)}
+
+@font-face {
+  font-family: 'Carter One';
+  src: url('/static/carterone.eot');
+  src: url('/static/carterone.eot?#iefix') format('embedded-opentype'),
+       url('/static/carterone.woff') format('woff'),
+       url('/static/carterone.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;    
+}
+
+.styled {font-family: 'Carter One', cursive;}
+
+</style>
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="/static/b-3.0.3/html5shiv.js"></script>
+      <script src="/static/b-3.0.3/respond.min.js"></script>
+    <![endif]-->
+
+
+{% endblock %}
+
+{% block favico %} 
+{% endblock %}
+
+{% block nav %} 
+{% if u %}
+  <li class="dropdown hidden-print"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Airbases <b class="caret"></b></a>
+    <ul class="dropdown-menu nav-stacked">
+    <li><a href="{% url 'flight-airbase-list' %}"><i class="glyphicon glyphicon-road"></i> All airbases</a></li>
+    {% if u.airbases %}
+    {% for b in u.airbases %}
+    <li><a href="/airbase/{{ b }}/"><i class="glyphicon glyphicon-road" style='color:gainsboro;'></i> {{ b.name  }} ({{ b }})</a></li>
+    {% endfor %}
+    {% endif %}
+    <li class="divider"></li>
+    <li><a href="{% url 'flight-airbase-add' %}">Add an airbase</a></li>
+    <li class="divider"></li><li><a href="{% url 'flight-lfee-list' %}"><i class="glyphicon glyphicon-usd"></i> Landing fees</a></li>
+    <li><a href="{% url 'flight-rfee-list' %}"><i class="glyphicon glyphicon-usd"></i> Retardant prices</a></li>
+    </ul>
+  </li>
+  <li class="dropdown hidden-print"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Airplanes <b class="caret"></b></a>
+    <ul class="dropdown-menu nav-stacked">
+    <li><a href="{% url 'flight-airplane-list' %}"><i class="glyphicon glyphicon-plane"></i> All airplanes</a></li>
+    {% if u.airplanes %}
+    {% for a in u.airplanes %}
+    <li><a href="/airplane/{{ a.tail }}/{{ a.name }}"><i class="glyphicon glyphicon-plane" style='color:gainsboro;'></i> {{ a }}</a></li>
+    {% endfor %}
+    {% endif %}
+    <li class="divider"></li>
+    <li><a href="{% url 'flight-airplane-add' %}">Add an airplane</a></li>
+    <li class="divider"></li>
+    <li><a href="{% url 'flight-contract-list' %}"><i class="glyphicon glyphicon-certificate"></i> Contracts</a></li>
+    <li><a href="{% url 'flight-rate-list' %}"><i class="glyphicon glyphicon-usd"></i> Clock rates</a></li>
+    <li><a href="{% url 'flight-fueling-list' %}">&#x26FD; Fuelings</a></li>
+    </ul>
+  </li>
+  <li class="dropdown hidden-print"><a class="dropdown-toggle" data-toggle="dropdown" href="#">People <b class="caret"></b></a>
+    <ul class="dropdown-menu nav-stacked">
+    <li><a href="{% url 'flight-person-list' %}"><i class="glyphicon glyphicon-user"></i> All people</a></li>
+    {% if u.people %}
+    {% for p in u.people %}
+    <li><a href="/person/{{ p.firstname }} {{ p.lastname }}/"><i class="glyphicon glyphicon-user" style='color:gainsboro;'></i> {{ p.firstname }} {{ p.lastname }}</a></li>
+    {% endfor %}
+    {% endif %}
+    <li class="divider"></li>
+    <li><a href="{% url 'flight-person-add' %}">Add a person</a></li>
+    </ul>
+  </li>
+  <li class="dropdown hidden-print"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Incidents <b class="caret"></b></a>
+    <ul class="dropdown-menu nav-stacked">
+    <li><a href="{% url 'flight-incident-list' %}"><i class="glyphicon glyphicon-fire"></i> All incidents</a></li>
+    {% if u.incidents %}
+    {% for i in u.incidents %}
+    <li><a href="/incident/{{ i }}/"><i class="glyphicon glyphicon-fire" style='color:gainsboro;'></i> {{ i }}</a></li>
+    {% endfor %}
+    {% endif %}
+    <li class="divider"></li>
+    <li><a href="{% url 'flight-incident-add' %}">Add an incident</a></li>
+    </ul>
+  </li>
+{% endif %}
+{% endblock %}
+
+
+{% block pagetitle %}
+{% endblock %}
+
+{% block content %}
+{% load humanize %}
+{% if not u %}
+
+<style>
+body {
+  background:url('/static/images/4418610921_a39bc01fff_b.jpg') no-repeat;
+  background-attachment: fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  background-size: cover;
+}
+</style>
+    <!--[if lt IE 9]>
+<style>
+body {
+  background:#f0f8ff no-repeat;
+  background-attachment: fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  background-size: cover;
+}
+</style>
+    <![endif]-->
+<br />
+
+<!-- START THE FEATURETTES -->
+<div>
+<div class="featurette well" id="one" style="max-width:600px;">
+<h3>In a World of 'Whys'</h3>
+<h5><quiet><span class='styled'>FLiGHT</span> solves for X</quiet></h5>
+<p>How? Mostly, it's a database of aircraft operations, retardant use, and associated costs. These data are processed and aggregated into various products that will answer your questions, or keep others from asking you for answers.</p>
+</div>
+
+<div class="featurette well" id="two" style="max-width:600px;">
+<h3>When Danger Looms...</h3>
+<h5><quiet><span class='styled'>FLiGHT</span> is everywhere at once</quiet></h5>
+<p>Unilke yesterday's software, <span class='styled'>FLiGHT</span> has no clunky downloads, messy installers, or wasteful packaging. It's on the actual internet so we can all work together better. And <span class='styled'>FLiGHT</span> is free as in cheap: No hidden charges or monthly fees, no salesmen will call.</p>
+</div>
+
+<div class="featurette well" id="three" style="max-width:600px;">
+<h3>Getting Started?</h3>
+<h5><quiet><span class='styled'>FLiGHT</span> could be easier than you think</quiet></h5>
+<p>If you are an airbase manager or affiliate and want to use <span class='styled'>FLiGHT</span>, <a href='/accounts/signup/'>register for a user account</a> and email <a>xx@xxxx.xxx</a> so we know you aren't just some nodbody from the internet. Include your airbase details and we'll make sure you have write permissions at your airbases. Thanks!</p>
+</div>
+
+</div>
+<!-- /END THE FEATURETTES -->
+
+</div>
+
+</div>
+{% else%}
+
+{% with u as person %}
+{% if u.logitems %}
+<div class='col-md-5'>
+<h3>{% if u.logitems %}<span class='ccalculated'>{{ u.logitems|length }}</span> Action{{ u.logitems|length|pluralize }}{% else %}<span class='ccalculated'>0</span> Actions{% endif %}</h3>
+<h5><quiet>Entries from some logfile.</quiet></h5>
+<div>
+ <table class="table table-bordered table-condensed table-hover table-striped">
+    <thead>
+	<th>Log entry and timestamp</th>
+    </thead>
+	<tbody>
+{% for item in u.logitems %}
+	<tr>
+		<td>{{ item.message }} <quiet>{{ item.created|timesince }} ago</quiet></td>
+
+	</tr>
+{% endfor %}
+	</tbody>
+</table>
+</div>
+{% endif %}
+
+{% regroup u.trip_list|dictsort:"mission.airplane.name" by mission.airplane.name as airplane_list %}
+{% regroup u.trip_list|dictsort:"incident.resourceorder" by incident as incident_list %}
+{% regroup u.trip_list|dictsort:"planestart" by planestart|date as date_list %}
+  <div class="row">
+    <div id="myTabContent" class="tab-content">
+      <div class="tab-pane fade" id="help">
+<h4>Short Cuts <span class="pull-right"><a class="btn btn-xs btn-link" href="#two" data-toggle="tab" ><i class='glyphicon glyphicon-list'></i></a> <a class="btn btn-xs btn-link" href="#one" data-toggle="tab"><i class='glyphicon glyphicon-th-list'></i></a> {% if request.user.is_superuser and entmap %}<a class="btn btn-xs btn-link" href="#zero" data-toggle="tab"><i class='glyphicon glyphicon-globe'></i></a> {% endif %}<a class="btn btn-xs btn-link disabled" style="background-color:white;"><i class='glyphicon glyphicon-info-sign'></i></a></span></h4>
+
+	<div class='row'>
+	<div>
+	<table class="table table-bordered table-condensed s" id="help">
+    <thead>
+    <th>description</th>
+    <th>syntax</th>
+    <th>example</th>
+    </thead>
+    <tbody>
+
+  <tr class="active">
+  <td><i class="glyphicon glyphicon-home"></i> home</td>
+  <td><a href="/">/</a></td>
+  <td></td>
+  </tr>
+  <tr>
+  <td>your entries for year</td>
+  <td>/<span class='ored'>yyyy</span>/</td>
+  <td><a href="/{% now "Y" %}/">/{% now "Y" %}/</a></td>
+  </tr>
+  <tr>
+  <td>your entries for month</td>
+  <td>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>/</td>
+  <td><a href="/{% now "Y-m" %}/">/{% now "Y-m" %}/</a></td>
+  </tr>
+  <tr>
+  <td>your entries for date</td>
+  <td>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/{% now "Y-m" %}-01/">/{% now "Y-m" %}-01/</a></td>
+  </tr>
+  <tr>
+  <td>your entries for date range</td>
+  <td>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/{% now "Y" %}-01-01/{% now "Y-m-d" %}/">/{% now "Y" %}-01-01/{% now "Y-m-d" %}/</a></td>
+  </tr>
+
+  <tr class="active">
+  <td><i class="glyphicon glyphicon-question-sign"></i> search</td>
+  <td><a href="/search/">/search/</a></td>
+  <td></td>
+  </tr>
+  <tr>
+  <td>search by out</td>
+  <td>/search/?out=<span class='ored'>tla</span></td>
+  <td><a href="/search/?out=FAT">/search/?out=FAT</td>
+  </tr>
+  <tr>
+  <td>search by in</td>
+  <td>/search/?in=<span class='ored'>tla</span></td>
+  <td><a href="/search/?in=FAT,LMT">/search/?in=FAT,LMT</td>
+  </tr>
+  <tr>
+  <td>search by plane</td>
+  <td>/search/?plane=<span class='ored'>name</span></td>
+  <td><a href="/search/?plane=AA-15">/search/?plane=AA-15</td>
+  </tr>
+  <tr>
+  <td>search by fire</td>
+  <td>/search/?fire=<span class='ored'>name</span></td>
+  <td><a href="/search/?fire=Rim">/search/?fire=Rim</td>
+  </tr>
+  <tr>
+  <td>search by date range</td>
+  <td>/search/?from=<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>&to=<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span></td>
+  <td><a href="/search/?from=2013-08-01&to=2013-09-25">/search/?from=2013-08-01&to=2013-09-25</a></td>
+  </tr>
+  <tr>
+  <td>search by everything</td>
+  <td>/search/?out=<span class='ored'>tla</span>&plane=<span class='ored'>name</span>&fire=<span class='ored'>name</span>&from=<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>&to=<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span></td>
+  <td><a href="/search/?out=FAT&plane=AA-15,T-44,T-06&fire=Aspen,Rim&from=2013-08-01&to=2013-09-25">/search/?out=FAT&plane=AA-15,T-44,T-06&fire=Aspen,Rim&from=2013-08-01&to=2013-09-25</a></td>
+  </tr>
+
+  <tr class="active">
+  <td><i class="glyphicon glyphicon-stats"></i> users</td>
+  <td><a href="/user/">/user/</a></td>
+  <td></td>
+  </tr>
+  <tr>
+  <td>user</td>
+  <td>/user/<span class='ored'>username</span>/</td>
+  <td><a href="/user/{{ u }}/">/user/{{ u }}/</a> <span class="pull-right"></span></td>
+  </tr>
+  <tr>
+  <td>user for year</td>
+  <td>/user/<span class='ored'>username</span>/<span class='ored'>yyyy</span>/</td>
+  <td><a href="/user/{{ u }}/{% now "Y" %}/">/user/{{ u }}/{% now "Y" %}/</a></td>
+  </tr>
+  <tr>
+  <td>user for month</td>
+  <td>/user/<span class='ored'>username</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>/</td>
+  <td><a href="/user/{{ u }}/{% now "Y-m" %}/">/user/{{ u }}/{% now "Y-m" %}/</a></td>
+  </tr>
+  <tr>
+  <td>user for date</td>
+  <td>/user/<span class='ored'>username</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/user/{{ u }}/{% now "Y-m" %}-01/">/user/{{ u }}/{% now "Y-m" %}-01/</a></td>
+  </tr>
+  <tr>
+  <td>user for date range</td>
+  <td>/user/<span class='ored'>username</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/user/{{ u }}/{% now "Y" %}-01-01/{% now "Y-m-d" %}/">/user/{{ u }}/{% now "Y" %}-01-01/{% now "Y-m-d" %}/</a></td>
+  </tr>
+  <tr>
+  <td>user profile</td>
+  <td>/<span class='ored'>username</span>/</td>
+  <td><a href="/{{ u }}/">/{{ u }}/</a> <span class="pull-right"></span></td>
+  </tr>
+
+  <tr class="active">
+  <td><i class="glyphicon glyphicon-road"></i> airbases</td>
+  <td><a href="/airbase/">/airbase/</a> <span class="pull-right"><a class="label label-default" href="{% url 'flight-airbase-add' %}">Add airbase</a></span></td>
+  <td></td>
+  </tr>
+  <tr>
+  <td>landing fees</td>
+  <td><a href="/airbase/fee/">/airbase/fee/</a> <span class="pull-right"><a class="label label-success" href="{% url 'flight-lfee-add' %}">Add landing fee</a></span></td>
+  <td></td>
+  </tr>
+  <tr>
+  <td>retardant prices</td>
+  <td><a href="/airbase/retardant/">/airbase/retardant/</a> <span class="pull-right"><a class="label label-success" href="{% url 'flight-rfee-add' %}">Add retardant price</a></span></td>
+  <td></td>
+  </tr>
+  <tr>
+  <td>airbase</td>
+  <td>/airbase/<span class='ored'>tla</span>/</td>
+  <td><a href="/airbase/SBD/">/airbase/SBD/</a> <span class="pull-right"><a class="label label-default" href="/airbase/SBD/edit/">Edit airbase</a></span></td>
+  </tr>
+  <tr>
+  <td>airbase landing fees</td>
+  <td>/airbase/<span class='ored'>tla</span>/fee/</td>
+  <td><a href="/airbase/SBD/fee/">/airbase/SBD/fee/</a> <span class="pull-right"><a class="label label-success" href="/airbase/SBD/fee/add/">Add landing fee at airbase</a></span></td>
+  </tr>
+  <tr>
+  <td>airbase retardant prices</td>
+  <td>/airbase/<span class='ored'>tla</span>/retardant/</td>
+  <td><a href="/airbase/SBD/retardant/">/airbase/SBD/retardant/</a> <span class="pull-right"><a class="label label-success" href="/airbase/SBD/retardant/add/">Add retardant price at airbase</a></span></td>
+  </tr>
+
+  <tr>
+  <td>airbase for year</td>
+  <td>/airbase/<span class='ored'>tla</span>/<span class='ored'>yyyy</span>/</td>
+  <td><a href="/airbase/SBD/2013/">/airbase/SBD/2013/</a></td>
+  </tr>
+  <tr>
+  <td>airbase for month</td>
+  <td>/airbase/<span class='ored'>tla</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>/</td>
+  <td><a href="/airbase/SBD/2013-05/">/airbase/SBD/2013-05/</a></td>
+  </tr>
+  <tr>
+  <td>airbase for date</td>
+  <td>/airbase/<span class='ored'>tla</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/airbase/SBD/2013-05-03/">/airbase/SBD/2013-05-03/</a></td>
+  </tr>
+  <tr>
+  <td>airbase for date retardant use <span class="pull-right"><i class="glyphicon glyphicon-list-alt"></i></span></td>
+  <td>/airbase/<span class='ored'>tla</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/retuse/</td>
+  <td><a href="/airbase/SBD/2013-05-03/retuse/">/airbase/SBD/2013-05-03/retuse/</a></td>
+  </tr>
+  <tr>
+  <td>airbase for date range</td>
+  <td>/airbase/<span class='ored'>tla</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/airbase/SBD/2013-05-03/{% now "Y-m-d" %}/">/airbase/SBD/2013-05-03/{% now "Y-m-d" %}/</a></td>
+  </tr>
+  <tr>
+  <td>airbase for date range retardant use <span class="pull-right"><i class="glyphicon glyphicon-list-alt"></i></span></td>
+  <td>/airbase/<span class='ored'>tla</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/retuse/</td>
+  <td><a href="/airbase/SBD/2013-05-03/{% now "Y-m-d" %}/retuse/">/airbase/SBD/2013-05-03/{% now "Y-m-d" %}/retuse/</a></td>
+  </tr>
+
+
+  <tr class="active">
+  <td><i class="glyphicon glyphicon-plane"></i> airplanes</td>
+  <td><a href="/airplane/">/airplane/</a> <span class="pull-right"><a class="label label-default" href="{% url 'flight-airplane-add' %}">Add airplane</a></span></td>
+  <td></td>
+  </tr>
+  <tr>
+  <td>contracts</td>
+  <td><a href="/airplane/contract/">/airplane/contract/</a> <span class="pull-right"><a class="label label-success" href="{% url 'flight-contract-add' %}">Add contract</a></span></td>
+  </tr>
+  <tr>
+  <td>clock rates</td>
+  <td><a href="/airplane/rate/">/airplane/rate/</a> <span class="pull-right"><a class="label label-success" href="{% url 'flight-rate-add' %}">Add clock rate</a></span></td>
+  <td></td>
+  </tr>
+  <tr>
+  <td>fuelings</td>
+  <td><a href="{% url 'flight-fueling-list' %}">/airplane/fueling/</a> <span class="pull-right"><a class="label label-success" href="{% url 'flight-fueling-add' %}">Add fueling</a></span></td>
+  </tr>
+  <tr>
+  <td>airplanes with tail</td>
+  <td>/airplane/<span class='ored'>tail</span>/</td>
+  <td><a href="/airplane/N1386C/">/airplane/N1386C/</a></td>
+  </tr>
+  <tr>
+  <td>airplane</td>
+  <td>/airplane/<span class='ored'>tail</span>/<span class='ored'>name</span>/</td>
+  <td><a href="/airplane/N1386C/T-44/">/airplane/N1386C/T-44/</a> <span class="pull-right"><a class="label label-default" href="/airplane/N1386C/T-44/edit/">Edit airplane</a> <a class="label label-info" href="/airplane/N1386C/T-44/add/">Add flight</a></span></td>
+  </tr>
+  <tr>
+  <td>airplane contracts</td>
+  <td>/airplane/<span class='ored'>tail</span>/<span class='ored'>name</span>/contract/</td>
+  <td><a href="/airplane/N1386C/T-44/contract/">/airplane/N1386C/T-44/contract/</a> <span class="pull-right"><a class="label label-success" href="/airplane/N1386C/T-44/contract/add/">Add contract for airplane</a></span></td>
+  </tr>
+  <tr>
+  <td>airplane clock rates</td>
+  <td>/airplane/<span class='ored'>tail</span>/<span class='ored'>name</span>/rate/</td>
+  <td><a href="/airplane/N1386C/T-44/rate/">/airplane/N1386C/T-44/rate/</a> <span class="pull-right"><a class="label label-success" href="/airplane/N1386C/T-44/rate/add/">Add clock rate for airplane</a></span></td>
+  </tr>
+  <tr>
+  <td>airplane fuelings</td>
+  <td>/airplane/fueling/<span class='ored'>tail</span>/<span class='ored'>name</span></td>
+  <td><a href="{% url 'flight-fueling-list' %}N1386C/T-44/">/airplane/fueling/N1386C/T-44/</a> <span class="pull-right"><a class="label label-success" href="/airplane/fueling/add/">Add fueling for airplane</a></span></td>
+  </tr>
+  <tr>
+  <td>airplane for year</td>
+  <td>/airplane/<span class='ored'>tail</span>/<span class='ored'>name</span>/<span class='ored'>yyyy</span>/</td>
+  <td><a href="/airplane/N1386C/T-44/2013/">/airplane/N1386C/T-44/2013/</a></td>
+  </tr>
+  <tr>
+  <td>airplane for month</td>
+  <td>/airplane/<span class='ored'>tail</span>/<span class='ored'>name</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>/</td>
+  <td><a href="/airplane/N1386C/T-44/2013-08/">/airplane/N1386C/T-44/2013-08/</a></td>
+  </tr>
+  <tr>
+  <td>airplane for date</td>
+  <td>/airplane/<span class='ored'>tail</span>/<span class='ored'>name</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/airplane/N1386C/T-44/2013-08-08/">/airplane/N1386C/T-44/2013-08-08/</a> <span class="pull-right"><a class="label label-info" href="/airplane/N1386C/T-44/2013-08-08/add/">Add flight</a></span></td>
+  </tr>
+  <tr>
+  <td>airplane for date range</td>
+  <td>/airplane/<span class='ored'>tail</span>/<span class='ored'>name</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/airplane/N445NA/T-45/2013-08-08/{% now "Y-m-d" %}/">/airplane/N445NA/T-45/2013-08-08/{% now "Y-m-d" %}/</a></td>
+  </tr>
+
+  <tr class="active">
+  <td><i class="glyphicon glyphicon-plane"></i> <i class="glyphicon glyphicon-fire"></i> airplane against incident</td>
+  <td>/airplane/<span class='ored'>tail</span>/<span class='ored'>name</span>/<span class='ored'>incident</span>/<span class='ored'>ro</span>/</td>
+  <td><a href="/airplane/N445NA/T-45/Silver/NM-GNF-230/">/airplane/N445NA/T-45/Silver/NM-GNF-230/</a> <span class="pull-right"><a class="label label-info" href="/airplane/N445NA/T-45/Silver/NM-GNF-230/add/">Add flight</a></span></td>
+  </tr>
+  <tr>
+  <td>airplane against incident for year</td>
+  <td>/airplane/<span class='ored'>tail</span>/<span class='ored'>name</span>/<span class='ored'>incident</span>/<span class='ored'>ro</span>/<span class='ored'>yyyy</span>/</td>
+  <td><a href="/airplane/N445NA/T-45/Silver/NM-GNF-230/2013/">/airplane/N445NA/T-45/Silver/NM-GNF-230/2013/</a></td>
+  </tr>
+  <tr>
+  <td>airplane against incident for month</td>
+  <td>/airplane/<span class='ored'>tail</span>/<span class='ored'>name</span>/<span class='ored'>incident</span>/<span class='ored'>ro</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>/</td>
+  <td><a href="/airplane/N445NA/T-45/Silver/NM-GNF-230/2013-06/">/airplane/N445NA/T-45/Silver/NM-GNF-230/2013-06/</a></td>
+  </tr>
+  <tr>
+  <td>airplane against incident for date</td>
+  <td>/airplane/<span class='ored'>tail</span>/<span class='ored'>name</span>/<span class='ored'>incident</span>/<span class='ored'>ro</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/airplane/N445NA/T-45/Silver/NM-GNF-230/2013-06-08/">/airplane/N445NA/T-45/Silver/NM-GNF-230/2013-06-08/</a> <span class="pull-right"><a class="label label-info" href="/airplane/N445NA/T-45/Silver/NM-GNF-230/2013-06-08/add/">Add flight</a></span></td>
+  </tr>
+  <tr>
+  <td>airplane against incident for date range</td>
+  <td>/airplane/<span class='ored'>tail</span>/<span class='ored'>name</span>/<span class='ored'>incident</span>/<span class='ored'>ro</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/airplane/N445NA/T-45/Silver/NM-GNF-230/2013-06-08/2013-06-09/">/airplane/N445NA/T-45/Silver/NM-GNF-230/2013-06-08/2013-06-09/</a></td>
+  </tr>
+
+  <tr class="active">
+  <td><i class="glyphicon glyphicon-fire"></i> incidents</td>
+  <td><a href="/incident/">/incident/</a> <span class="pull-right"><a class="label label-default" href="{% url 'flight-incident-add' %}">Add incident</a></span></td>
+  <td></td>
+  </tr>
+  <tr>
+  <td>incidents named</td>
+  <td>/incident/<span class='ored'>name</span>/</td>
+  <td><a href="/incident/Kenwood/">/incident/Kenwood/</a></td>
+  </tr>
+  <tr>
+  <td>incident</td>
+  <td>/incident/<span class='ored'>name</span>/<span class='ored'>ro</span>/</td>
+  <td><a href="/incident/Kenwood/CA-BDU-11274/">/incident/Kenwood/CA-BDU-11274/</a> <span class="pull-right"><a class="label label-default" href="/incident/Kenwood/CA-BDU-11274/edit/">Edit incident</a> <a class="label label-info" href="/incident/Kenwood/CA-BDU-11274/add/">Add flight</a></span></td>
+  </tr>
+  <tr>
+  <td>incident daily cost <span class="pull-right"><i class="glyphicon glyphicon-list-alt"></i></span></td>
+  <td>/incident/<span class='ored'>name</span>/<span class='ored'>ro</span>/dailycost/</td>
+  <td><a href="/incident/Williams/CA-ANF-4803/dailycost/">/incident/Williams/CA-ANF-4803/dailycost/</a></td>
+  </tr>
+  <tr>
+  <td>incident daily flight <span class="pull-right"><i class="glyphicon glyphicon-list-alt"></i></span></td>
+  <td>/incident/<span class='ored'>name</span>/<span class='ored'>ro</span>/dailyflight/</td>
+  <td><a href="/incident/Williams/CA-ANF-4803/dailyflight/">/incident/Williams/CA-ANF-4803/dailyflight/</a></td>
+  </tr>
+  <tr>
+  <td>incident for year</td>
+  <td>/incident/<span class='ored'>name</span>/<span class='ored'>ro</span>/<span class='ored'>yyyy</span>/</td>
+  <td><a href="/incident/Williams/CA-ANF-4803/2012/">/incident/Williams/CA-ANF-4803/2012/</a></td>
+  </tr>
+  <tr>
+  <td>incident for month</td>
+  <td>/incident/<span class='ored'>name</span>/<span class='ored'>ro</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>/</td>
+  <td><a href="/incident/Williams/CA-ANF-4803/2012-09/">/incident/Williams/CA-ANF-4803/2012-09/</a></td>
+  </tr>
+  <tr>
+  <td>incident for date</td>
+  <td>/incident/<span class='ored'>name</span>/<span class='ored'>ro</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/incident/Williams/CA-ANF-4803/2012-09-04/">/incident/Williams/CA-ANF-4803/2012-09-04/</a> <span class="pull-right"><a class="label label-info" href="/incident/Williams/CA-ANF-4803/2012-09-04/add/">Add flight</a></span></td>
+  </tr>
+  <tr>
+  <td>incident for date daily cost <span class="pull-right"><i class="glyphicon glyphicon-list-alt"></i></span></td>
+  <td>/incident/<span class='ored'>name</span>/<span class='ored'>ro</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/dailycost/</td>
+  <td><a href="/incident/Williams/CA-ANF-4803/2012-09-04/dailycost/">/incident/Williams/CA-ANF-4803/2012-09-04/dailycost/</a></td>
+  </tr>
+  <tr>
+  <td>incident for date range</td>
+  <td>/incident/<span class='ored'>name</span>/<span class='ored'>ro</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/incident/Williams/CA-ANF-4803/2012-09-04/2012-09-09/">/incident/Williams/CA-ANF-4803/2012-09-04/2012-09-09/</a></td>
+  </tr>
+
+  <tr class="active">
+  <td><i class="glyphicon glyphicon-user"></i> persons</td>
+  <td><a href="/person/">/person/</a> <span class="pull-right"><a class="label label-default" href="{% url 'flight-person-add' %}">Add person</a></span></td>
+  <td></td>
+  </tr>
+  <tr>
+  <td>person</td>
+  <td>/person/<span class='ored'>firstname</span> <span class='ored'>lastname</span>/</td>
+  <td><a href="/person/Jack Maxey/">/person/Jack Maxey/</a> <span class="pull-right"><a class="label label-default" href="/person/Jack Maxey/edit">Edit person</a></span></td>
+  </tr>
+  <tr>
+  <td>person for year</td>
+  <td>/person/<span class='ored'>firstname</span> <span class='ored'>lastname</span>/<span class='ored'>yyyy</span>/</td>
+  <td><a href="/person/Jack Maxey/2012/">/person/Jack Maxey/2012/</a></td>
+  </tr>
+  <tr>
+  <td>person for month</td>
+  <td>/person/<span class='ored'>firstname</span> <span class='ored'>lastname</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>/</td>
+  <td><a href="/person/Jack Maxey/2012-06/">/person/Jack Maxey/2012-06/</a></td>
+  </tr>
+  <tr>
+  <td>person for date</td>
+  <td>/person/<span class='ored'>firstname</span> <span class='ored'>lastname</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/person/Jack Maxey/2012-06-15/">/person/Jack Maxey/2012-06-15/</a></td>
+  </tr>
+  <tr>
+  <td>person for date range</td>
+  <td>/person/<span class='ored'>firstname</span> <span class='ored'>lastname</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/person/Jack Maxey/2012-06-01/2014-03-01/">/person/Jack Maxey/2012-06-01/2014-03-01/</a></td>
+  </tr>
+
+  <tr class="active">
+  <td><i class="glyphicon glyphicon-globe"></i> states</td>
+  <td>/state/</td>
+  <td></td>
+  </tr>
+  <tr>
+  <td>state</td>
+  <td>/state/<span class='ored'>st</span>/</td>
+  <td><a href="/state/CA/">/state/CA/</a></td>
+  </tr>
+  <tr>
+  <td>state for year</td>
+  <td>/state/<span class='ored'>st</span>/<span class='ored'>yyyy</span>/</td>
+  <td><a href="/state/CA/2012/">/state/CA/2012/</a></td>
+  </tr>
+  <tr>
+  <td>state for month</td>
+  <td>/state/<span class='ored'>st</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>/</td>
+  <td><a href="/state/CA/2012-09/">/state/CA/2012-09/</a></td>
+  </tr>
+  <tr>
+  <td>state for date</td>
+  <td>/state/<span class='ored'>st</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/state/CA/2013-05-03/">/state/CA/2013-05-03/</a></td>
+  </tr>
+  <tr>
+  <td>state for date range</td>
+  <td>/state/<span class='ored'>st</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/state/CA/2012-09-01/2014-03-01/">/state/CA/2013-05-01/2013-05-15/</a></td>
+  </tr>
+
+  <tr class="active">
+  <td><i class="glyphicon glyphicon-globe"></i> regions</td>
+  <td>/region/</td>
+  <td></td>
+  </tr>
+  <tr>
+  <td>region</td>
+  <td>/region/<span class='ored'>r#</span>/</td>
+  <td><a href="/region/01/">/region/01/</a></td>
+  </tr>
+  <tr>
+  <td>region for year</td>
+  <td>/region/<span class='ored'>r#</span>/<span class='ored'>yyyy</span>/</td>
+  <td><a href="/region/01/2012/">/region/01/2012/</a></td>
+  </tr>
+  <tr>
+  <td>region for month</td>
+  <td>/region/<span class='ored'>r#</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>/</td>
+  <td><a href="/region/01/2012-08/">/region/01/2012-08/</a></td>
+  </tr>
+  <tr>
+  <td>region for date</td>
+  <td>/region/<span class='ored'>r#</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/region/01/2012-08-24/">/region/01/2012-08-24/</a></td>
+  </tr>
+  <tr>
+  <td>region date range</td>
+  <td>/region/<span class='ored'>r#</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/region/01/2013-02-01/2013-07-01/">/region/01/2013-02-01/2013-07-01/</a></td>
+  </tr>
+
+  <tr class="active">
+  <td><i class="glyphicon glyphicon-th-list"></i> missions</td>
+  <td><a href="/mission/">/mission/</a></td>
+  <td></td>
+  </tr>
+  <tr>
+  <td>missions for year</td>
+  <td>/mission/<span class='ored'>yyyy</span>/</td>
+  <td><a href="/mission/2012/">/mission/2012/</a></td>
+  </tr>
+  <tr>
+  <td>missions for month</td>
+  <td>/mission/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>/</td>
+  <td><a href="/mission/2012-08/">/mission/2012-08/</a></td>
+  </tr>
+  <tr>
+  <td>missions for date</td>
+  <td>/mission/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/mission/2012-08-24/">/mission/2012-08-24/</a></td>
+  </tr>
+  <tr>
+  <td>missions for date range</td>
+  <td>/mission/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/<span class='ored'>yyyy</span>-<span class='ored'>mm</span>-<span class='ored'>dd</span>/</td>
+  <td><a href="/mission/2013-02-01/2013-07-01/">/mission/2013-02-01/2013-07-01/</a></td>
+  </tr>
+
+  <tr>
+  <td>airplane on date ('mission')</td>
+  <td>/mission/<span class='ored'>tail</span>/<span class='ored'>name</span>/<span class='ored'>yyyy</span>/<span class='ored'>mm</span>/<span class='ored'>dd</span>/</td>
+  <td><a href="/mission/N1386C/T-44/2013/08/08/">/mission/N1386C/T-44/2013/08/08/</a> <span class="pull-right"><a class="label label-default" href="/mission/N1386C/T-44/2013/08/08/edit/">Edit mission</a> <a class="label label-info" href="/mission/N1386C/T-44/2013/08/08/add/">Add flight</a></span></td>
+  </tr>
+  <tr>
+  <td>airplane on date ('mission') air ops <span class="pull-right"><i class="glyphicon glyphicon-list-alt"></i></span></td>
+  <td>/mission/<span class='ored'>tail</span>/<span class='ored'>name</span>/<span class='ored'>yyyy</span>/<span class='ored'>mm</span>/<span class='ored'>dd</span>/airops/</td>
+  <td><a href="/mission/N1386C/T-44/2013/08/08/airops/">/mission/N1386C/T-44/2013/08/08/airops/</a></td>
+  </tr>
+  <tr>
+  <td>airplane on date ('mission') abs <span class="pull-right"><i class="glyphicon glyphicon-list-alt"></i></span></td>
+  <td>/mission/<span class='ored'>tail</span>/<span class='ored'>name</span>/<span class='ored'>yyyy</span>/<span class='ored'>mm</span>/<span class='ored'>dd</span>/abs/</td>
+  <td><a href="/mission/N1386C/T-44/2013/08/08/abs/">/mission/N1386C/T-44/2013/08/08/abs/</a></td>
+  </tr>
+  </tbody>
+	</table>
+	
+	</div>
+	</div>
+
+      </div>
+      {% if request.user.is_superuser and entmap %}
+      <div class="tab-pane fade" id="zero">
+<h4>{% if not adate and not form %}Recent additions : {% endif %}<span class='ccalculated'>{{ u.tfs }}</span> <a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Flight{{ u.tfs|pluralize }}</a>{% if u.tbs %}{% if u.tms or u.tns %}, {% else %} & {% endif %}<span class='ccalculated'>{{ u.tbs }}</span> <span class="text-info"><a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Departure{{ u.tbs|pluralize }}</a></span>{% else %}{% endif %}{% if u.tms %}{% if u.tns %}, {% else %} & {% endif %}<span class='ccalculated'>{{ u.tms }}</span> <span class="text-success"><a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Ramp Move{{ u.tms|pluralize }}</a></span>{% else %}{% endif %}{% if u.tns %} & <span class='ccalculated'>{{ u.tns }}</span> <span class="text-warning"><a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">NonAvail Interval{{ u.tns|pluralize }}</a></span>{% endif %} by <span class='ccalculated'>{{ airplane_list|length }}</span> <a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Airplane{{ airplane_list|length|pluralize }}</a> against <span class='ccalculated'>{{ incident_list|length }}</span> <a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Incident{{ incident_list|length|pluralize }}</a>{% if date_list|length >= 2 %} in <span class='ccalculated'>{{ date_list|length }}</span> <a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Day{{ date_list|length|pluralize }}</a>{% else %} in <span class='ccalculated'>{{ date_list|length }}</span> <a href="#one" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Day{{ date_list|length|pluralize }}</a>{% endif %} <span class="pull-right"><a class="btn btn-xs btn-link" href="#two" data-toggle="tab" ><i class='glyphicon glyphicon-list'></i></a> <a class="btn btn-xs btn-link" href="#one" data-toggle="tab"><i class='glyphicon glyphicon-th-list'></i></a> <a class="btn btn-xs btn-link disabled" style="background-color:white;"><i class='glyphicon glyphicon-globe'></i></a> <a class="btn btn-xs btn-link" href="#help" data-toggle="tab"><i class='glyphicon glyphicon-info-sign'></i></a></span></h4>
+        <div class='row'>
+        <div id="map"  style='height:440px;border:thick solid black;'>
+
+        </div>
+        </div>
+
+      </div>
+      {% endif %}
+      <div class="tab-pane fade" id="one">
+<h4>{% if not adate and not form %}Recent additions : {% endif %}<span class='ccalculated'>{{ u.tfs }}</span> <a href="#two" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Flight{{ u.tfs|pluralize }}</a>{% if u.tbs %}{% if u.tms or u.tns %}, {% else %} & {% endif %}<span class='ccalculated'>{{ u.tbs }}</span> <span class="text-info"><a href="#two" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Departure{{ u.tbs|pluralize }}</a></span>{% else %}{% endif %}{% if u.tms %}{% if u.tns %}, {% else %} & {% endif %}<span class='ccalculated'>{{ u.tms }}</span> <span class="text-success"><a href="#two" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Ramp Move{{ u.tms|pluralize }}</a></span>{% else %}{% endif %}{% if u.tns %} & <span class='ccalculated'>{{ u.tns }}</span> <span class="text-warning"><a href="#two" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">NonAvail Interval{{ u.tns|pluralize }}</a></span>{% endif %} by <span class='ccalculated'>{{ airplane_list|length }}</span> <a href="#two" data-toggle="tab" style="text-decoration:none;color:rgb(0, 0, 0);">Airplane{{ airplane_list|length|pluralize }}</a> against <span class='ccalculated'>{{ incident_list|length }}</span> <a href="#two" data-toggle="tab" style="text-decoration:none;color:rgb(0, 0, 0);">Incident{{ incident_list|length|pluralize }}</a>{% if date_list|length >= 2 %} in <span class='ccalculated'>{{ date_list|length }}</span> <a href="#two" data-toggle="tab" style="text-decoration:none;color:rgb(0, 0, 0);">Day{{ date_list|length|pluralize }}</a>{% else %} in <span class='ccalculated'>{{ date_list|length }}</span> <a href="#two" data-toggle="tab" style="text-decoration:none;color:rgb(0, 0, 0);">Day{{ date_list|length|pluralize }}</a>{% endif %} <span class="pull-right"><a class="btn btn-xs btn-link" href="#two" data-toggle="tab" ><i class='glyphicon glyphicon-list'></i></a> <a class="btn btn-xs btn-link disabled" style="background-color:white;"><i class='glyphicon glyphicon-th-list'></i></a> {% if request.user.is_superuser and entmap %}<a class="btn btn-xs btn-link" href="#zero" data-toggle="tab"><i class='glyphicon glyphicon-globe'></i></a> {% endif %}<a class="btn btn-xs btn-link" href="#help" data-toggle="tab"><i class='glyphicon glyphicon-info-sign'></i></a></span></h4>
+<h5><quiet>A 'mission' is a set of flights made by one airplane on one day. Duty hours are specified at the mission. {% if u.mission_list %}Click on its </quiet><strong>Date</strong><quiet> in the table below to get to a mission's page.</quiet></h5>
+<div>
+ <table class="table table-bordered table-condensed table-hover table-stripe s" id="s2">
+    <thead>
+    <th>Airplane</th>
+    <th>Date</th>
+    <th>Avail Cost</th>
+    <th>NonAvail Cost</th>
+    <th>Extended Cost</th>
+    <th>Flight Count</th>
+    <th>Flight Time</th>
+    <th>Flight Cost</th>
+    <th>Landing Fees</th>
+    <th>Ret Gal</th>
+    <th>Retardant Cost</th>
+    <th>Total Cost</th>
+    </thead>
+    <tbody>
+{% for mission in u.mission_list %}
+    <tr class="{% if mission.tbs >= 1 %}info{% endif %}">
+        <td><a href="{% url 'flight-airplane-detail' mission.airplane.tail mission.airplane.name %}">{{ mission.airplane }}</a></td>
+        <td><strong><a href="/mission/{{ mission.airplane.tail }}/{{ mission.airplane.name }}/{{ mission.startdate|date:"Y/m/d/" }}">{{ mission.startdate|date:"Y M d" }}</a></strong></td>
+        <td class='number'>{% if mission.acost %}$<span class='dcalculated'>{{ mission.acost|floatformat:2|intcomma }}</span>{% else %}--{% endif %}</td>
+        <td class='number'>{% if mission.ncost %}$<span class='dcalculated'>{{ mission.ncost|floatformat:2|intcomma }}</span>{% else %}--{% endif %}</td>
+        <td class='number'>{% if mission.ecost %}$<span class='dcalculated'>{{ mission.ecost|floatformat:2|intcomma }}</span>{% else %}--{% endif %}</td>
+        <td class='number'>{% if mission.tfs %}<span class='ccalculated'>{{ mission.tfs }}{% else %}0{% endif %}</span></td>
+        <td class='number'>{% if mission.ftime %}<span class='ccalculated'>{{ mission.ftime|floatformat:2|intcomma }}</span>{% else %}--{% endif %}</td>
+        <td class='number'>{% if mission.fcost %}$<span class='dcalculated'>{{ mission.fcost|floatformat:2|intcomma }}</span>{% else %}--{% endif %}</td>
+        <td class='number'>{% if mission.lcost %}$<span class='dcalculated'>{{ mission.lcost|floatformat:2|intcomma }}</span>{% else %}--{% endif %}</td>
+        <td class='number'>{% if mission.retardant_sum %}<span class='ccalculated'>{{ mission.retardant_sum|intcomma }}</span>{% else %}--{% endif %}</td>
+        <td class='number'>{% if mission.rcost %}$<span class='dcalculated'>{{ mission.rcost|floatformat:2|intcomma }}</span>{% else %}--{% endif %}</td>
+        <td class='number'>{% if mission.tcost %}$<span class='dcalculated'>{{ mission.tcost|floatformat:2|intcomma }}</span>{% else %}--{% endif %}</td>
+        </tr>
+{% empty %}
+    <tr>
+      <td></td>
+    <td class='date'></td>
+    <td class='number'>--</td>
+    <td class='number'>--</td>
+    <td class='number'>--</td>
+    <td class='number'>--</td>
+    <td class='number'>--</td>
+    <td class='number'>--</td>
+    <td class='number'>--</td>
+    <td class='number'>--</td>
+    <td class='number'>--</td>
+    <td class='number'>--</td>
+    </tr>
+{% endfor %}
+    </tbody>
+    <tr class='total'>
+        <td></td>
+        <td><strong>TOTALS</strong></td>
+        <td>$<span class='dcalculated'>{% if u.acost %}{{ u.acost|floatformat:2|intcomma }}{% else %}0.00{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.ncost %}{{ u.ncost|floatformat:2|intcomma }}{% else %}0.00{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.ecost %}{{ u.ecost|floatformat:2|intcomma }}{% else %}0.00{% endif %}</span></td>
+        <td><span class='ccalculated'>{% if u.fcount %}{{ u.fcount }}{% else %}0{% endif %}</span></td>
+        <td><span class='ccalculated'>{% if u.ftime %}{{ u.ftime|floatformat:2 }}{% else %}0{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.fcost %}{{ u.fcost|floatformat:2|intcomma }}{% else %}0.00{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.lcost %}{{ u.lcost|floatformat:2|intcomma }}{% else %}0.00{% endif %}</span></td>
+        <td><span class='ccalculated'>{% if u.rgal %}{{ u.rgal|intcomma }}{% else %}0{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.rcost %}{{ u.rcost|floatformat:2|intcomma }}{% else %}0.00{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.tcost %}{{ u.tcost|floatformat:2|intcomma }}{% else %}0.00{% endif %}</span></td>
+    </tr>
+</table>
+</div>
+{% else %}
+None yet.</quiet></h5>
+{% endif %}
+      </div>
+      <div class="tab-pane fade in active" id="two">
+<h4>{% if not adate and not form %}Recent additions : {% endif %}{% if u.trip_list %}<span class='ccalculated'>{{ u.tfs }}</span> <a href="{% if request.user.is_superuser and entmap %}#zero{% else %}#one{% endif %}" data-toggle="tab" style="text-decoration:none;color;color:rgb(0, 0, 0);">Flight{{ u.tfs|pluralize }}</a>{% if u.tbs %}{% if u.tms or u.tns %}, {% else %} & {% endif %}<span class='ccalculated'>{{ u.tbs }}</span> <span class="text-info">Departure{{ u.tbs|pluralize }}</span>{% else %}{% endif %}{% if u.tms %}{% if u.tns %}, {% else %} & {% endif %}<span class='ccalculated'>{{ u.tms }}</span> <span class="text-success">Ramp Move{{ u.tms|pluralize }}</span>{% else %}{% endif %}{% if u.tns %} & <span class='ccalculated'>{{ u.tns }}</span> <span class="text-warning">NonAvail Interval{{ u.tns|pluralize }}</span>{% endif %}{% else %}<span class='ccalculated'>0</span> Flights{% endif %} by <span class='ccalculated'>{{ airplane_list|length }}</span> <a href="{% if request.user.is_superuser and entmap %}#zero{% else %}#one{% endif %}" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Airplane{{ airplane_list|length|pluralize }}</a> against <span class='ccalculated'>{{ incident_list|length }}</span> <a href="{% if request.user.is_superuser and entmap %}#zero{% else %}#one{% endif %}" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Incident{{ incident_list|length|pluralize }}</a>{% if date_list|length >= 2 %} in <span class='ccalculated'>{{ date_list|length }}</span> <a href="{% if request.user.is_superuser and entmap %}#zero{% else %}#one{% endif %}" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Day{{ date_list|length|pluralize }}</a>{% else %} in <span class='ccalculated'>{{ date_list|length }}</span> <a href="{% if request.user.is_superuser and entmap %}#zero{% else %}#one{% endif %}" data-toggle="tab" style="text-decoration:none;color:rgb(102, 102, 102);">Day{{ date_list|length|pluralize }}</a>{% endif %} <span class="pull-right"><a class="btn btn-xs btn-link disabled" style="background-color:white;"><i class='glyphicon glyphicon-list'></i></a> <a class="btn btn-xs btn-link" href="#one" data-toggle="tab"><i class='glyphicon glyphicon-th-list'></i></a> {% if request.user.is_superuser and entmap %}<a class="btn btn-xs btn-link" href="{% if request.user.is_superuser and entmap %}#zero{% else %}#one{% endif %}" data-toggle="tab"><i class='glyphicon glyphicon-globe'></i></a> {% endif %}<a class="btn btn-xs btn-link" href="#help" data-toggle="tab"><i class='glyphicon glyphicon-info-sign'></i></a></span></h4>
+<h5><quiet>A 'flight' is a trip into the air and back. Each one has an origin and a destination, a start and stop time, a retardant load, and misc costs. {% if u.trip_list %}Click on the </quiet><strong>Date</strong><quiet> in the table below to get to the mission page for that flight.</quiet></h5>
+
+<div>
+ <table class="table table-bordered table-condensed table-hover table-stripe s" id="s1">
+    <thead>
+    <th>Airplane</th>
+    <th>Incident</th>
+    <th>Date</th>
+    <th>From <i class='fa fa-plane fa-rotate-45'></i> To</th>
+    <th>Start Time</th>
+    <th>Stop Time</th>
+    <th>Flight Time</th>
+    <th>Flight Cost</th>
+    <th>Landing Fee</th>
+    <th>Ret Gal</th>
+    <th>Ret Type</th>
+    <th>Ret Cost</th>
+    <th>Misc Cost</th>
+    <th>Move Cost</th>
+    <th>Total Cost</th>
+    </thead>
+    <tbody>
+{% for m in u.mission_list %}
+{% for trip in m.trip_list %}
+  <tr class="{% if trip.fmso == 's' %}warning{% elif trip.fmso == 'm' %}success{% elif trip.fmso == 'x' %}warning{% elif not trip.tobase %}info{% endif %}">
+        <td><a href="{% url 'flight-airplane-detail' trip.mission.airplane.tail trip.mission.airplane.name %}">{{ trip.mission.airplane }}</a></td>
+        <td>{% if trip.incident %}<a href="{% url 'flight-incident-detail' trip.incident.name trip.incident.resourceorder %}">{{ trip.incident.name }}</a>{% endif %}</td>
+        <td><strong><a href="/mission/{{ trip.mission.airplane.tail }}/{{ trip.mission.airplane.name }}/{{ trip.mission.startdate|date:"Y/m/d/" }}">{{ trip.mission.startdate|date:"Y M d" }}</a></strong></td>
+        <td>{% if trip.fmso == 'd' %}<i class="fa fa-cloud"></i>{% elif trip.fmso == 'x' %}<strong><small>Pays Extended</small></strong>{% elif trip.frombase %}<a href="{% url 'flight-airbase-detail' trip.frombase %}">{{ trip.frombase }}</a>{% else %}--{% endif %} {% if trip.fmso == 's' %}<i class="fa fa-clock-o"></i>{% elif trip.fmso == 'm' %}<i class="fa fa-random"></i>{% elif trip.fmso == 'x' %}{% elif not trip.tobase %}<i class="fa fa-plane fa-spin"></i>{% else %}<strong> <i class='fa fa-plane fa-rotate-45'></i> </strong>{% endif %} {% if trip.div == 1 %}<i class="fa fa-cloud"></i>{% elif trip.tobase %}<a href="{% url 'flight-airbase-detail' trip.tobase %}">{{ trip.tobase }}</a>{% elif trip.fmso == 'x' %}{% else %}--{% endif %}</td>
+        <td>{{ trip.planestart|date:"H:i" }}</td>
+        <td>{% if trip.fmso == 'x' %}{% else %}{{ trip.planestop|date:"H:i" }}{% endif %}</td>
+        <td class='number'>{% if trip.ftime and trip.tobase %}<span class='ccalculated'>{{ trip.ftime|floatformat:2|intcomma }}</span>{% else %}--{% endif %}</td>
+        <td class='number'>{% if trip.fcost and trip.tobase %}$<span class='dcalculated'>{{ trip.fcost|floatformat:2|intcomma }}</span>{% else %}--{% endif %}</td>
+        <td class='number'>{% if trip.div == 1 %}--{% elif trip.lcost and trip.tobase %}$<a href="/airbase/{{ trip.tobase.tla|upper }}/fee/">{{ trip.lcost|floatformat:2|intcomma }}</a>{% elif trip.tobase %}<span class='unk small'>NO DATA</span>{% else %}--{% endif %}</td>
+        <td class='number'>{% if trip.retardantgal %}{{ trip.retardantgal|intcomma }}{% else %}--{% endif %}</td>
+        <td>{% if trip.rtype %}<a href="/airbase/{{ trip.frombase.tla|upper }}/retardant/">{{ trip.rtype }}</a>{% else %}--{% endif %}</td>
+        <td class='number'>{% if trip.rcost %}$<span class='dcalculated'>{{ trip.rcost|floatformat:2|intcomma }}</span>{% else %}--{% endif %}</td>
+        <td class='number'>{% if trip.misccost %}${{ trip.misccost|floatformat:2|intcomma }}{% else %}--{% endif %}</td>
+        <td class='number'>{% if trip.mcost %}$<span class='dcalculated'>{{ trip.mcost|floatformat:2|intcomma }}</span>{% else %}--{% endif %}</td>
+        <td class='number'>{% if trip.tcost %}$<span class='dcalculated'>{{ trip.tcost|floatformat:2|intcomma }}</span>{% else %}--{% endif %}</td>
+    </tr>
+{% endfor %}
+{% empty %}
+    <tr>
+    <td></td>
+    <td class='date'></td>
+    <td class='date'></td>
+    <td>--</td>
+    <td>--</td>
+    <td>--</td>
+    <td class='number'>--</td>
+    <td class='number'>--</td>
+    <td class='number'>--</td>
+    <td class='number'>--</td>
+    <td>--</td>
+    <td class='number'>--</td>
+    <td class='number'>--</td>
+    <td class='number'>--</td>
+    <td class='number'>--</td>
+    </tr>
+{% endfor %}
+    </tbody>
+    <tr class='total'>
+        <td></td>
+        <td></td>
+        <td><strong>TOTALS</strong></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><span class='ccalculated'>{{ u.ftime|floatformat:2 }}</span></td>
+        <td>$<span class='dcalculated'>{% if u.fcost %}{{ u.fcost|floatformat:2|intcomma }}{% else %}0.00{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.lcost %}{{ u.lcost|floatformat:2|intcomma }}{% else %}0.00{% endif %}</span></td>
+        <td><span class='ccalculated'>{% if u.rgal %}{{ u.rgal|intcomma }}{% else %}0{% endif %}</span></td>
+        <td></td>
+        <td>$<span class='dcalculated'>{% if u.rcost %}{{ u.rcost|floatformat:2|intcomma }}{% else %}0.00{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.ocost %}{{ u.ocost|floatformat:2|intcomma }}{% else %}0.00{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.mcost %}{{ u.mcost|floatformat:2|intcomma }}{% else %}0.00{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if u.icost %}{{ u.icost|floatformat:2|intcomma }}{% else %}0.00{% endif %}</span></td>
+    </tr>
+</table>
+</div>
+{% else %}
+<div>
+<p>
+</p>
+</div>
+{% endif %}
+      </div>
+    </div>
+  </div>
+
+
+{% endwith %}
+{% endif %}
+{% endblock %}
+
+{% block endscripts %}
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="/static/b-3.0.3/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="/static/tablesorter/jquery.tablesorter.js"></script>
+
+{% if request.user.is_superuser and not_now %}
+<script type="text/javascript">
+    var event_list = new L.LayerGroup();
+
+    {% if u.trip_list %}
+    {% for t in u.trip_list %}
+      L.polyline([[{{ t.frombase.geom.centroid.y|floatformat:3 }}, {{ t.frombase.geom.centroid.x|floatformat:3 }}],[{{ t.tobase.geom.centroid.y|floatformat:3 }},{{ t.tobase.geom.centroid.x|floatformat:3 }}]], {
+            color: 'red',
+            weight: 2,
+            fillColor: 'red',
+            fillOpacity: 0.5
+          }
+      ).bindPopup('<ul>{{ t.mission }}</ul>').addTo(event_list);
+    {% endfor %}
+    {% endif %}
+
+
+    function map_init (map, options) {
+        controlZoom.removeFrom(map);
+        event_list.addTo(map);
+        //mp.addTo(map);
+        //map.fitBounds([[{{ object.geom.y }},{{ object.geom.x }}]]);
+        //map.fitBounds(mp.getBounds());
+        }
+</script>
+{% endif %}
+
+<script type="text/javascript">
+$(function() {
+    $("#s1").tablesorter({
+      headers: {
+        1: { sorter: "text" },
+        2: { sorter: "uslongDate" }
+      }
+  });
+    $("#s2").tablesorter({
+      headers: {
+        1: { sorter: "uslongDate" }
+      }
+  });
+});
+</script>
+<script type="text/javascript" >
+$(function(){
+    $('.container').tooltip({
+      selector: "a[data-toggle=tooltip]",
+    })
+});
+</script>
+
+{% endblock %}

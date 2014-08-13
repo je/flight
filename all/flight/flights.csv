@@ -1,0 +1,3 @@
+﻿{% load humanize %}{% if trip_list %}date,stop,incident,aid,airplane,ftype,origin,destination,ftime,retgal
+{% for t in trip_list %}{{ t.planestart|date:'YmdHi' }},{% if t.fmso in 'fms' %}{{ t.planestop|date:'YmdHi' }}{% else %}--{% endif %},{{ t.incident }},{{ t.mission.airplane_id }},{{ t.mission.airplane }},{{ t.fmso }},{{ t.frombase }},{% if t.tobase %}{{ t.tobase }}{% else %}--{% endif %},{% if t.fmso in 'fms' %}{{ t.min }}{% else %}--{% endif %},{{ t.retardantgal }}
+{% endfor %}{% endif %}

@@ -1,0 +1,138 @@
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+<body>
+<style type='text/css'>
+
+.chart {
+  background: #fff;
+  border: solid 1px #ddd;
+  box-shadow: 0 0 4px rgba(0,0,0,.2);
+  font: 10px sans-serif;
+  height: 180px;
+  position: relative;
+  width: 720px;
+}
+
+.chart svg {
+  border-left: solid 2px #ddd;
+  left: 360px;
+  position: absolute;
+  top: 0;
+}
+
+.chart pre {
+  font: 12px monospace;
+  height: 60px;
+  left: 10px;
+  position: absolute;
+  top: 0;
+  width: 340px;
+}
+
+.chart circle.little {
+  fill: #aaa;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+
+.chart button {
+  left: 275px;
+  position: absolute;
+  top: 145px;
+  width: 80px;
+}
+
+.chart .data rect {
+  fill: #eee;
+  stroke: #ccc;
+}
+
+</style>
+
+    <div id="viz"></div>
+
+<script type="text/javascript">
+
+var data = [
+  [ 1175,  5871, 8916, 2868], // trip time
+  [ 1951, 1048, 2060, 6171],  // trip cost
+  [ 8010, 1645, 800, 8045],   // retardant
+  [ 11975,  581, 8916, 2868], // retardant cost
+];
+
+// Define the margin, radius, and color scale. The color scale will be
+// assigned by index, but if you define your data using objects, you could pass
+// in a named field from the data object instead, such as `d.name`. Colors
+// are assigned lazily, so if you want deterministic behavior, define a domain
+// for the color scale.
+var m = 10,
+    r = 100,
+    z = d3.scale.category20b();
+
+// Insert an svg:svg element (with margin) for each row in our dataset. A
+// child svg:g element translates the origin to the pie center.
+var svg = d3.select("#viz2").selectAll("svg")
+    .data(data)
+  .enter().append("svg:svg")
+    .attr("width", (r + m) * 2)
+    .attr("height", (r + m) * 2)
+  .append("svg:g")
+    .attr("transform", "translate(" + (r + m) + "," + (r + m) + ")");
+
+// The data for each svg:svg element is a row of numbers (an array). We pass
+// that to d3.layout.pie to compute the angles for each arc. These start and end
+// angles are passed to d3.svg.arc to draw arcs! Note that the arc radius is
+// specified on the arc, not the layout.
+svg.selectAll("path")
+    .data(d3.layout.pie())
+    .enter().append("svg:path")
+    .attr("d", d3.svg.arc()
+    .innerRadius(r / 4)
+    .outerRadius(r))
+    .style("fill", function(d, i) { return z(i); });
+
+</script>
+
+<script type="text/javascript">
+
+d3.json("../{{ object.id }}.json", function(error, data) {
+data.list.forEach(function(d) {
+d.startdate = parseDate(d.startdate);
+d.count = +d.count;
+});
+})
+
+d3.json("../{{ object.id }}.json", function(datasetText) {
+
+var parsedCSV = d3.csv.parseRows(datasetText);
+
+var sampleHTML = d3.select("#viz")
+    .append("table")
+    .style("border-collapse", "collapse")
+    .style("border", "2px black solid")
+
+    .selectAll("tr")
+    .data(parsedCSV)
+    .enter().append("tr")
+
+    .selectAll("td")
+    .data(function(d){return d;})
+    .enter().append("td")
+    .style("border", "1px black solid")
+    .style("padding", "5px")
+    .on("mouseover", function(){d3.select(this).style("background-color", "aliceblue")})
+    .on("mouseout", function(){d3.select(this).style("background-color", "white")})
+    .text(function(d){return d;})
+    .style("font-size", "12px");
+
+});
+
+</script>
+
+</body>
+</html>

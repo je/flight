@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet/less" type="text/css" href="/static/b/bootstrap.less" />
+    <script src="/static/b/less-1.3.3.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="/static/b/glyphicons.css" />
+
+{% block extrahead %}
+<link href='//fonts.googleapis.com/css?family=Carter+One' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="/static/fa-4.0.0/css/font-awesome.min.css">
+<style type="text/css">
+styled {font-family: 'Carter One', cursive;}
+
+quiet {color:#666;} /* grey */
+ccalculated {color:#8B0000;} /* DarkRed */
+dcalculated {color:#006400;} /* DarkGreen */
+tcalculated {color:#8B0000; width:50px; margin-right:auto; text-align:right;}
+tm {width:50px; float:right; margin-right:auto; text-align:right;}
+rt {width:60px; float:right; margin-right:auto; text-align:right;}
+lt {width:60px; margin-right:auto; text-align:right;}
+label.text {cursor: text;}
+span.lt {width:90px;}
+unk {color:white;background-color:black;} /* white on black */
+td.plane {width:100px;}
+td.date {width:80px;}
+td.ex {background-color:white;border-left:thick solid #FF4500;}
+td.total {background-color:white;border-top:thick solid;text-align:right;}
+td.number {text-align:right;}
+td.blank {background-color:white;}
+tr.zg {background-color: #f9f9f9;} /* zebra */
+tr.zb {background-color: #F0F8FF;} /* zebra */
+dogreen {color:#556B2F;} /* DarkOliveGreen */
+fgreen {color:#228B22;} /* ForestGreen */
+ored {color:#FF4500;} /* OrangeRed */
+/* a:visited {color:#4B0082;}  Indigo */
+#id_effectivedate_0 {width:80px;}
+#id_effectivedate_1 {width:50px; margin-left:5px;}
+#id_dailyavailstart_0 {display:none;}
+#xid_dailyavailstop_0 {display:none;}
+#xid_nonavailstart_0 {display:none;}
+#xid_nonavailstop_0 {display:none;}
+#id_planestart_0 {display:none;}
+#id_planestop_0 {display:none;}
+
+@media print {
+      .visible-print  { display: inherit !important; }
+      .hidden-print   { display: none !important; }
+      a:link:after, a:visited:after {
+        content: "";
+      }
+    }
+
+.fa-rotate-45{filter:progid:DXImageTransform.Microsoft.BasicImage(rotation=1);-webkit-transform:rotate(45deg);-moz-transform:rotate(45deg);-ms-transform:rotate(45deg);-o-transform:rotate(45deg);transform:rotate(45deg)}
+	
+</style>
+
+{% endblock %}
+
+{% block favico %} 
+{% endblock %}
+  </head>
+  <body>
+<div class='container' style="margin-left:50px;">
+
+{% block messages %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert{% if message.tags %} alert-{{ message.tags }}{% endif %}" style="margin-top:15px;font-size:14px;">
+<button type="button" class="close" data-dismiss="alert">&times;</button>
+{% if message.tags %}<strong>{{ message.tags|title }}:</strong> {% endif %}{{ message|safe }}
+</div>
+{% endfor %}
+{% endif %}
+{% endblock %}
+
+{% block title %}
+<title>Incident Daily Flight {{ object.name }}{% if adate %} &sect {% if year %}{{ adate|date:"Y" }}{% elif mo %}{{ adate|date:"Y M" }}{% else %}{{ adate|date:"Y M d" }}{% endif %}{% if bdate %} - {{ bdate|date:"Y M d" }}{% endif %}{% else %}{% endif %}</title>
+{% endblock %}
+
+{% block content %}
+
+{% block mtitle %}
+<br />
+{% endblock %}
+
+{% block mhead %}
+{% load humanize %}
+{% with object as incident %}
+
+<div class='row'>
+<div class='col-md-12'>
+<h3><quiet>Incident Daily Flight Summary</quiet></h3>
+ <table class="table table-bordered table-condensed">
+	<tbody>
+	<tr>
+		<th>Base:</th><td colspan="2">*</td>
+		<th></th><td colspan="2"></td>
+		<th>Fire Cost Summary</th><td colspan="2">{% if adate %}<a href="/incident/{{ incident.name }}/{{ incident.resourceorder }}/{{ adate|date:"Y-m-d" }}/">{{ adate|date:"Y M d" }}<br />{{ adate|date:"l" }}</a>{% else %}All Fire Dates{% endif %}</td>
+	</tr>
+	<tr>
+		<th>Fire:</th><td colspan="2"><a href="/incident/{{ incident.name }}/{{ incident.resourceorder }}/">{{ incident.name }}</a></td>
+		<th>Override:</th><td colspan="2">{{ incident.userunit }}</td>
+		<th></th><td colspan="2">{% if adate %}<a href="/incident/{{ incident.name }}/{{ incident.resourceorder }}/{{ adate|date:"Y-m-d" }}/">{{ adate|date:"Y M d" }}<br />{{ adate|date:"l" }}</a>{% else %}All Dates{% endif %}</td>
+	</tr>
+	<tr>
+		<th>Order #:</th><td colspan="2">{{ incident.resourceorder }}</td>
+		<th>Mgmt Code:</th><td colspan="2">{{ incident.firechargenum }}</td>
+		<th></th><td colspan="2"></td>
+	</tr>
+	</tbody>
+</table>
+
+{% regroup flight_list|dictsort:"mission.startdate" by mission as date_list %}
+<table class="table table-bordered table-condensed">
+{% for d in mission_list %}
+	<thead>
+	</thead>
+	<thead>
+	{% if not forloop.first %}<tr><th colspan="12"></th></tr>{% endif %}
+	<tr><th colspan="1">{{ d.startdate|date:"Y M d" }}</th><th colspan="11">{{ d.airplane }}</th></tr>
+	<th>Date</th>
+	<th>From/To</th>
+	<th>Off</th>
+	<th>On</th>
+	<th>Flight Time</th>
+	<th>Flight Cost</th>
+	<th>Landing Cost</th>
+	<th>Standby Cost</th>
+	<th>Move Cost</th>
+	<th>Retardant Gallons</th>
+	<th>Retardant Cost</th>
+	<th>Total Cost</th>
+	</thead>
+	<tbody>
+	{% for trip in d.trip_list %}
+
+  		<tr class="{% if trip.fmso == 's' %}warning{% elif trip.fmso == 'm' %}success{% elif trip.fmso == 'x' %}warning{% elif not trip.tobase %}info{% endif %}">
+		<td class='date'><strong><a href="/mission/{{ trip.mission.airplane.tail }}/{{ trip.mission.airplane.name }}/{{ trip.mission.startdate|date:"Y/m/d/" }}">{{ trip.mission.startdate|date:"Y M d" }}</a></strong></td>
+        <td>{% if trip.fmso == 'd' %}<i class="fa fa-cloud"></i>{% elif trip.fmso == 'x' %}<strong><small>Pays Extended</small></strong>{% elif trip.frombase %}<a href="">{{ trip.frombase }}</a>{% else %}--{% endif %} {% if trip.fmso == 's' %}<i class="fa fa-clock-o"></i>{% elif trip.fmso == 'm' %}<i class="fa fa-random"></i>{% elif trip.fmso == 'x' %}{% elif not trip.tobase %}<i class="fa fa-plane fa-spin"></i>{% else %}<strong> <i class='fa fa-plane fa-rotate-45'></i> </strong>{% endif %} {% if trip.div == 1 %}<i class="fa fa-cloud"></i>{% elif trip.tobase %}<a href="">{{ trip.tobase }}</a>{% elif trip.fmso == 'x' %}{% else %}--{% endif %}</td>
+		<td>{{ trip.planestart|date:"H:i" }}</td>
+		<td>{% if trip.fmso == 'x' %}{% else %}{{ trip.planestop|date:"H:i" }}{% endif %}</td>
+		<td class='number'>{% if trip.ftime and trip.tobase %}<span class='ccalculated'>{{ trip.ftime|floatformat:2 }}</span>{% else %}--{% endif %}</td>
+	    <td class='number'>{% if trip.fcost and trip.tobase %}$<span class='dcalculated'>{{ trip.fcost|floatformat:2|intcomma }}</span>{% else %}--{% endif %}</td>
+	    <td class='number'>{% if trip.div == 1 %}--{% elif trip.lcost and trip.tobase %}$<a href="/airbase/{{ trip.tobase.tla|upper }}/fee/">{{ trip.lcost }}</a>{% elif trip.tobase %}<span class='unk small'>NO DATA</span>{% else %}--{% endif %}</td>
+	    <td class='number'>$<span class='dcalculated'>{% if trip.scost %}{{ trip.scost|floatformat:2|intcomma }}{% else %}0</span>{% endif %}</td>
+	    <td class='number'>$<span class='dcalculated'>{% if trip.mcost %}{{ trip.mcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+	    <td class='number'>{% if trip.retardantgal %}{{ trip.retardantgal|intcomma }}{% else %}0{% endif %}</td>
+	    <td class='number'>$<span class='dcalculated'>{% if trip.rcost %}{{ trip.rcost|floatformat:2|intcomma }}{% else %}0</span>{% endif %}</td>
+	    <td class='number'>$<span class='dcalculated'>{% if trip.tcost %}{{ trip.tcost|floatformat:2|intcomma }}{% else %}0{% endif %}</span></td>
+
+    </tr>
+
+	{% endfor %}
+
+{% endfor %}
+	</tr>
+	</tbody>
+</table>
+
+</div>
+</div>
+
+{% endwith %} 
+{% endblock %}
+
+{% block missionhelp %}
+{% if request.user.is_superuser %}
+
+{{ aobject.datesums }}<br>
+{% regroup flight_list|dictsort:"mission.startdate" by mission as date_list %}
+{% for d in date_list %}
+{{ d }}<br>
+{% endfor %}
+
+{% endif %}
+{% endblock %}
+{% endblock %}
+<div>
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+  <script src="/static/b/js/bootstrap.min.js"></script>
+  </body>
+</html>

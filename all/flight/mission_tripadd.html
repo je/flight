@@ -1,0 +1,72 @@
+{% extends "flight/mission_detail.html" %}
+{% load humanize %}
+{% block mtitle %}
+{% with object as mission %} 
+<h3><quiet><i class="glyphicon glyphicon-th-list" style="color:gainsboro;"></i></a> Mission</quiet> <a href="/airplane/{{ mission.airplane.tail }}/{{ mission.airplane.name }}/">{{ mission.airplane.name }}</a> &sect <a href="/mission/{{ mission.airplane.tail }}/{{ mission.airplane.name }}/{{ mission.startdate|date:"Y/m/d" }}/edit/" style="text-decoration:none;color:rgb(0, 0, 0);" data-original-title="Edit" href="#" data-toggle="tooltip" data-placement='bottom' title="Edit this mission">{{ mission.startdate|date:"Y M d" }}</a> <small>{% if request.user.is_superuser and zz %}<a href="/mission/{{ mission.airplane.tail }}/{{ mission.airplane.name }}/{{ mission.startdate|date:"Y/m/d" }}/print/" data-original-title="Print" href="#" data-toggle="tooltip" data-placement='bottom'title="Print this mission"><i class="glyphicon glyphicon-print"></i></a>{% if mission.printout_list %}<sup><a href="/mission/{{ mission.airplane.tail }}/{{ mission.airplane.name }}/{{ mission.startdate|date:"Y/m/d" }}/print/">{{ mission.printout_list|length }}</a> </sup>{% endif %}{% endif %} <a href="/mission/{{ mission.airplane.tail }}/{{ mission.airplane.name }}/{{ mission.startdate|date:"Y/m/d" }}/airops/" data-original-title="Air Ops Worksheet" href="#" data-toggle="tooltip" data-placement='bottom'title="Air Ops Worksheet"><i class="glyphicon glyphicon-list-alt"></i></a> <a href="/mission/{{ mission.airplane.tail }}/{{ mission.airplane.name }}/{{ mission.startdate|date:"Y/m/d" }}/abs/" data-original-title="ABS Worksheet" href="#" data-toggle="tooltip" data-placement='bottom'title="ABS Worksheet"><i class="glyphicon glyphicon-list-alt"></i></a></small> <span class="pull-right"><a class="btn btn-xs btn-default" href="/mission/{{ mission.airplane.tail }}/{{ mission.airplane.name }}/{{ mission.startdate|date:"Y/m/d" }}/edit/"> Edit mission</a></span></h3>
+{% endwith %}
+{% endblock %}
+
+{% block thead %}
+{% with object as mission %}
+<div>
+ <table class="table table-bordered table-condensed table-hover table-stripe">
+	<thead>
+	<th class='col-lg-3 col-md-3 col-sm-3'>Incident</th>
+	<th class='col-lg-3 col-md-3 col-sm-3'>From <i class='fa fa-plane fa-rotate-45'></i> To</th>
+	<th class='col-lg-1 col-md-1 col-sm-1'>Start Time</th>
+	<th class='col-lg-1 col-md-1 col-sm-1'>Stop Time</th>
+	<th>Ret Gal</th>
+	<th>Ret Type</th>
+	<th>Ret Cost</th>
+	<th>Misc Cost</th>
+	</thead>
+	<tbody>
+{% if trip_list %}
+{% for trip in trip_list %}
+	<tr class="{% if trip.fmso == 's' %}warning{% elif trip.fmso == 'm' %}success{% elif trip.fmso == 'x' %}warning{% elif not trip.tobase %}info{% endif %}">
+		<td class='date'><a href="{% url 'flight-incident-detail' trip.incident.name trip.incident.resourceorder %}">{{ trip.incident.name }}</a></td>
+		<td>{% if trip.fmso == 'd' %}<i class="fa fa-cloud"></i>{% elif trip.fmso == 'x' %}<strong><small>Pays Extended</small></strong>{% elif trip.frombase %}<a href="{% url 'flight-airbase-detail' trip.frombase %}">{{ trip.frombase }}</a>{% else %}--{% endif %} {% if trip.fmso == 's' %}<i class="fa fa-clock-o"></i>{% elif trip.fmso == 'm' %}<i class="fa fa-random"></i>{% elif trip.fmso == 'x' %}{% elif not trip.tobase %}<i class="fa fa-plane fa-spin"></i>{% else %}<strong> <i class='fa fa-plane fa-rotate-45'></i> </strong>{% endif %} {% if trip.div == 1 %}<i class="fa fa-cloud"></i>{% elif trip.tobase %}<a href="{% url 'flight-airbase-detail' trip.tobase %}">{{ trip.tobase }}</a>{% elif trip.fmso == 'x' %}{% else %}--{% endif %} <small class='pull-right'><a href="/mission/{{ mission.airplane.tail }}/{{ mission.airplane.name }}/{{ mission.startdate|date:"Y/m/d" }}/{{ trip }}/edit/" data-original-title="Edit" href="#" data-toggle="tooltip" title="Edit this flight"><i class="glyphicon glyphicon-edit"></i></a> <a href="/mission/{{ mission.airplane.tail }}/{{ mission.airplane.name }}/{{ mission.startdate|date:"Y/m/d" }}/{{ trip }}/delete/" onclick="return confirm('Are you sure?');" data-original-title="Delete" href="#" data-toggle="tooltip" title="Delete this flight"><i class="glyphicon glyphicon-trash"></i></a></small></td>
+		<td>{{ trip.planestart|date:"H:i" }}</td>
+		<td>{% if trip.fmso == 'x' %}{% else %}{{ trip.planestop|date:"H:i" }}{% endif %}</td>
+	    <td class='number'>{% if trip.retardantgal %}{{ trip.retardantgal|intcomma }}{% else %}--{% endif %}</td>
+		<td>{% if trip.rtype %}<a href="/airbase/{{ trip.frombase.tla|upper }}/retardant/">{{ trip.rtype }}</a>{% else %}--{% endif %}</td>
+    	<td class='number'>{% if trip.rcost %}$<span class='dcalculated'>{{ trip.rcost|floatformat:2|intcomma }}</span>{% else %}--{% endif %}</td>
+    	<td class='number'>{% if trip.misccost %}${{ trip.misccost|floatformat:2|intcomma }}{% else %}--{% endif %}</td>
+	</tr>
+{% endfor %}
+{% else %}
+{% endif %}
+	<tr class='info'>
+	{% if form.non_field_errors %}{% for error in form.non_field_errors %}
+	<div class="alert alert-danger">
+	{{ error|escape }}
+	</div>
+	{% endfor %}{% endif %}
+	<form method="POST" enctype="multipart/form-data" action="/mission/{{ mission.airplane.tail }}/{{ mission.airplane.name }}/{{ mission.startdate|date:"Y/m/d" }}/add/">
+		<td class="form-group{% if form.incident.errors %} has-error{% endif %}" colspan="1">{{ form.incident }}{% if form.incident.errors %}{% for error in form.incident.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group form-inline{% if form.frombase.errors or form.tobase.errors %} has-error{% endif %}">{{ form.frombase }} {{ form.tobase }}{% if form.frombase.errors %}{% for error in form.frombase.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}{% if form.tobase.errors %}{% for error in form.tobase.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.planestart.errors %} has-error{% endif %}" >{{ form.planestart }}{% if form.planestart.errors %}{% for error in form.planestart.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}{{ form.fmso }}{% if form.fmso.errors %}{% for error in form.fmso.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.planestop.errors %} has-error{% endif %}" >{{ form.planestop }}{% if form.planestop.errors %}{% for error in form.planestop.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class='form-group{% if form.retardantgal.errors %} has-error{% endif %} number' style='width:75px;'>{{ form.retardantgal }}{% if form.retardantgal.errors %}{% for error in form.retardantgal.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class='form-group{% if form.rtype.errors %} has-error{% endif %}' colspan='2'>{{ form.rtype }}{% if form.rtype.errors %}{% for error in form.rtype.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class='form-group{% if form.misccost.errors %} has-error{% endif %} number' style='width:80px;'>{{ form.misccost }}{% if form.misccost.errors %}{% for error in form.misccost.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+	</tr>
+	</tbody>
+	<tr class='total'>
+		<td><button type="submit" class="btn btn-xs btn-primary"><i class="glyphicon glyphicon-ok glyphicon-white"></i> Save</button> <a class="btn btn-xs" href="/mission/{{ mission.airplane.tail }}/{{ mission.airplane.name }}/{{ mission.startdate|date:"Y/m/d" }}/">Cancel</a></td>{% csrf_token %}
+		<td><strong>TOTALS</strong></td>
+		<td></td>
+		<td></td>
+        <td><span class='ccalculated'>{% if mission.rgal %}{{ mission.rgal|intcomma }}{% else %}0{% endif %}</span></td>
+		<td></td>
+        <td>$<span class='dcalculated'>{% if mission.rcost %}{{ mission.rcost|floatformat:2|intcomma }}{% else %}0.00{% endif %}</span></td>
+        <td>$<span class='dcalculated'>{% if mission.ocost %}{{ mission.ocost|floatformat:2|intcomma }}{% else %}0.00{% endif %}</span></td>
+	</tr>
+</table>
+</div>
+
+{% endwith %}
+{% endblock %}
+{% block missionhelp %}
+{% endblock %}
+

@@ -1,0 +1,27 @@
+{% extends "flight/lfee_list.html" %}
+
+{% block title %}
+<title>{% if thelfee %}Editing{% else %}Adding{% endif %} Landing Fee at Airbase {{ object.tla }}</title>
+{% endblock %}
+
+{% block fork %}
+<br>
+<form method="POST" enctype="multipart/form-data" action="{% if thelfee %}{% url 'flight-airbase-lfee-edit' thelfee.airbase.tla thelfee.id %}{% else %}{% if object %}{% url 'flight-airbase-lfee-add' object.tla %}{% else %}{% url 'flight-lfee-add' %}{% endif %}{% endif %}">
+	<tr>
+		<td>{% if form.airbase %}{{ form.airbase }}{% else %}{{ object.name }} (<a href="{% url 'flight-airbase-detail' object.tla %}">{{ object.tla }}</a>){% endif %}</td>
+		<td>{{ form.perwhat }}</td>
+		<td class='col-md-2 number' style='width:30px;'>{{ form.cost }}</td>
+		<td>{{ form.effectivedate }}</td>
+		<td>{% if thelfee %}<a href="/users/{{ fee.author }}/">{{ thelfee.author.first_name|slice:"1" }} {{ thelfee.author.last_name }}</a></br> 
+		<button type="submit" class="btn btn-xs btn-primary">Save</button>
+        <a class="btn btn-xs btn-default" href="{% url 'flight-airbase-detail' thelfee.airbase.tla %}{% if object %}{% url 'flight-airbase-lfeelist' object.tla %}{% else %}{% url 'flight-lfee-list' %}{% endif %}">Cancel</a>
+        <a class="btn btn-xs btn-danger" href="{% url 'flight-airbase-lfee-delete' thelfee.airbase.tla thelfee.id %}">Delete</a>
+        {% else %}
+        <button type="submit" class="btn btn-xs btn-primary">Save</button>
+        <a class="btn btn-xs btn-default" href="{% if object %}{% url 'flight-airbase-lfeelist' object.tla %}{% else %}{% url 'flight-lfee-list' %}{% endif %}">Cancel</a>
+        {% endif %}</td>
+	</tr>
+	{% csrf_token %}
+</form>
+{% endblock %}
+

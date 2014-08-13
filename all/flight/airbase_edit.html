@@ -1,0 +1,83 @@
+{% extends "flight/airbase_list.html" %}
+
+{% block title %}
+<title>{% if userform or permform %}Airbase Permissions{% elif object %}Editing Airbase {{ object.tla }}{% else %}New Airbase{% endif %}</title>
+{% endblock %}
+
+{% block content %}
+{% load humanize %}
+{% with object as airbase %}
+{% if form %}{{ form.media }}{% endif %}
+<script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script> 
+<div class="row">
+	<br>
+ 	<div class="row col-lg-12 col-md-12 col-sm-12">
+   	<form class="well form-horizontal col-lg-12 col-md-12 col-sm-12" method="POST" enctype="multipart/form-data" action="{% if userform or permform %}{% url 'flight-airbase-permissions' airbase.tla %}{% elif airbase %}{% url 'flight-airbase-edit' airbase.tla %}{% else %}{% url 'flight-airbase-add' %}{% endif %}">
+
+    	<legend>{% if permform %}Request permission at <quiet>Airbase</quiet> {{ airbase.name }} (<a href="{% url 'flight-airbase-detail' airbase.tla %}">{{ airbase.tla }}</a>){% else %}{% if airbase %}Editing{% if userform %} permissions at{% endif %} <quiet>Airbase</quiet> {{ airbase.name }} (<a href="{% url 'flight-airbase-detail' airbase.tla %}">{{ airbase.tla }}</a>){% else %}New Airbase{% endif %}{% endif %}
+    	<span class='pull-right'>
+        <button type="submit" class="btn btn-sm btn-primary"><i class="glyphicon glyphicon-ok glyphicon-white"></i> {% if permform %}Send Request{% elif userform %}Save Permissions{% elif airbase %}Save Airbase{% else %}Create Airbase{% endif %}</button>
+        <a class="btn btn-sm btn-default" href="{% if airbase %}{% url 'flight-airbase-detail' airbase.tla %}{% else %}{% url 'flight-airbase-list' %}{% endif %}">Cancel</a>
+        {% if userform or permform %}{% elif airbase %}<a class="btn btn-sm btn-danger" href="{% url 'flight-airbase-delete' airbase.tla %}"><i class="glyphicon glyphicon-remove glyphicon-white"></i> Delete</a>{% endif %}
+        </span>
+    	</legend>
+		{% if permform %}
+    	<h5><quiet>This will notify the Airbase Manager, <a href="/user/{{ airbase.manager.username }}/">{{ airbase.manager.first_name }} {{ airbase.manager.last_name }}</a>, who can give you permissions at the airbase.</quiet></h5>
+    	{% for field in permform %}    	
+		<div class="form-group{% if field.errors %} has-error{% endif %}">
+		{{ field }}
+		{% if field.errors %}{% for error in field.errors %}
+			<span class="help-inline help-block col-lg-8 col-lg-offset-1 col-md-8 col-md-offset-1 col-sm-8 col-sm-offset-2">{{ error|escape }}</span>
+		{% endfor %}{% endif %}
+		</div>
+		{% endfor %}
+		{% elif userform %}
+		<h5>Select users below to add them to the airbase user list. These users can do everything you can, e.g. delete the airbase and all of its flight data. Discretion strongly advised.</h5>
+    	{% for field in userform %}    	
+		<div class="form-group{% if field.errors %} has-error{% endif %}">
+		{{ field }}
+		{% if field.errors %}{% for error in field.errors %}
+			<span class="help-inline help-block col-lg-8 col-lg-offset-1 col-md-8 col-md-offset-1 col-sm-8 col-sm-offset-2">{{ error|escape }}</span>
+		{% endfor %}{% endif %}
+		</div>
+		{% endfor %}
+		{% else %}
+		{% if form.non_field_errors %}{% for error in form.non_field_errors %}
+		<div class="alert alert-danger">
+		{{ error|escape }}
+		</div>
+		{% endfor %}{% endif %}
+		{% for field in form %}
+		{% ifequal field.name 'geom' %}
+		<div class="row col-lg-12 col-md-12 col-sm-12">   
+		<div class="form-group{% if field.errors %} has-error{% endif %}">
+		<label class="control-label col-lg-1 col-md-1 col-sm-1" for="{{ field.name }}">{{ field.label }}</label>
+		<div class="col-lg-10 col-md-10 col-sm-10">
+			{{ field }}
+        </div>
+		{% if field.errors %}{% for error in field.errors %}
+			<span class="help-inline help-block col-lg-8 col-lg-offset-1 col-md-8 col-md-offset-1 col-sm-8 col-sm-offset-2">{{ error|escape }}</span>
+		{% endfor %}{% endif %}
+		</div>
+		</div>
+		{% else %}
+		<div class="row col-lg-6 col-md-6 col-sm-6">   
+		<div class="form-group{% if field.errors %} has-error{% endif %}">
+		<label class="control-label col-lg-2 col-md-2 col-sm-2" for="{{ field.name }}">{{ field.label }}</label>
+		<div class="col-lg-8 col-md-8 col-sm-8">
+			{{ field }}
+        </div>   
+		{% if field.errors %}{% for error in field.errors %}
+			<div class="help-inline help-block col-lg-12 col-md-12 col-sm-12 col-lg-offset-2 col-md-offset-2 col-sm-offset-2">{{ error|escape }}</div>
+		{% endfor %}{% endif %}
+		</div>
+		</div>
+		{% endifequal %}
+		{% endfor %}
+		{% endif %}
+		{% csrf_token %}
+	</form>
+ </div>
+ </div>
+{% endwith %}
+{% endblock %}

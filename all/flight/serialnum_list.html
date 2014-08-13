@@ -1,0 +1,33 @@
+{% extends "flight/fairs.html" %}
+
+{% block content %}
+{% load humanize %}
+        <h1 style="margin: 30px">Serial Nums</h1>
+        <div style="margin: 30px">
+        Values in this field should correspond to an existing aircraft serial number in the FAIRS database. Make sure the value is entered exactly as it is found in FAIRS. Any values in this field that cannot be found in the FAIRS database will cause the import to fail. 
+        </div>
+        <div style="margin: 30px">
+            {% if serialnum_list %}
+            <table class="table table-striped">
+                <tr>
+                <th>SerialNum</th>
+                <th></th>
+                <th></th>
+                </tr>
+                {% for serialnum in serialnum_list %}
+                    <tr>
+                        <td>{{ serialnum.serialnum }}</td>
+                        <td><a href="{% url 'edit_serialnum' serialnum.pk %}">edit</a></td>
+                        <td>
+                            <form method="POST" action="{% url 'delete_serialnum' serialnum.pk %}">
+                                {% csrf_token %}
+                                <input type="submit" class="btn btn-sm btn-danger" value="delete"></input>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+            <p><a href="{% url 'create_serialnum' %}">New serial num</a></p>
+        </div>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "flight/index.html" %}
+
+{% block title %}
+<title>Airplane Contracts</title>
+{% endblock %} 
+
+{% block content %}
+{% load humanize %}
+<h3><i class="glyphicon glyphicon-certificate" style="color:gainsboro;"></i> {% if object_list %}<span class='ccalculated'>{{ object_list|length }}</span> Contract{{ object_list|length|pluralize }}{% else %}<span class='ccalculated'>0</span> Contracts{% endif %} {% if object %}for <quiet>Airplane</quiet> <a href="{% url 'flight-airplane-detail' object.tail object.name %}">{{ object.name }}</a> (<a href="{% url 'flight-airplane-detail' object.tail object.name %}">{{ object.tail }}</a>){% else %}for All Airplanes{% endif %}{% if not form and not thecontract %}<span class="pull-right">{% if object %}<a class="btn btn-xs btn-success" href="{% url 'flight-airplane-contract-add' object.tail object.name %}">Add contract for this airplane</a>{% else %}<a class="btn btn-xs btn-success" href="{% url 'flight-contract-add' %}">Add contract</a>{% endif %}</span>{% endif %}</h3>
+<h5><quiet>Contracts hold administrative details of airplane use that change over time.</quiet></h5>
+
+<div>
+ <table class="table table-bordered table-condensed table-hover s" id="s1">
+	<thead>
+	<th>Airplane</th>
+	<th>Contract Type</th>
+	<th>Date Effective</th>
+	<th>Contractor</th>
+	<th>Contract</th>
+	<th>Gal</th>
+	<th>Days Off</th>
+	<th>Crew</th>
+	<th>Admin Base</th>
+	<th>COR</th>
+	<th>Reported By</th>
+	</thead>
+	<tbody>
+{% block form %}
+{% if fork %}
+
+{% endif %}
+{% endblock %}
+{% if form and not thecontract %}
+<form method="POST" enctype="multipart/form-data" action="{% if thecontract %}{% url 'flight-airplane-contract-edit' thecontract.airplane.tail thecontract.airplane.name thecontract.id %}{% else %}{% if object %}{% url 'flight-airplane-contract-add' object.tail object.name %}{% else %}{% url 'flight-contract-add' %}{% endif %}{% endif %}">
+	<tr class='info'>
+		{% if form.non_field_errors %}{% for error in form.non_field_errors %}
+		<div class="alert alert-danger">
+		{{ error|escape }}
+		</div>
+		{% endfor %}{% endif %}
+		<td class="form-group{% if form.airplane.errors %} has-error{% endif %}">{% if form.airplane %}{{ form.airplane }}{% else %}<a href="{% url 'flight-airplane-detail' object.tail object.name %}">{{ object.name }}</a>{% endif %}{% if form.airplane.errors %}{% for error in form.airplane.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.ct.errors %} has-error{% endif %}">{{ form.ct }}{% if form.ct.errors %}{% for error in form.ct.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.effectivedate.errors %} has-error{% endif %}">{{ form.effectivedate }}{% if form.effectivedate.errors %}{% for error in form.effectivedate.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.contractor.errors %} has-error{% endif %}">{{ form.contractor }}{% if form.contractor.errors %}{% for error in form.contractor.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.contract.errors %} has-error{% endif %}">{{ form.contract }}{% if form.contract.errors %}{% for error in form.contract.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.contractgallons.errors %} has-error{% endif %}">{{ form.contractgallons }}{% if form.contractgallons.errors %}{% for error in form.contractgallons.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.daysoff.errors %} has-error{% endif %}">{{ form.daysoff }}{% if form.daysoff.errors %}{% for error in form.daysoff.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.crewcount.errors %} has-error{% endif %}">{{ form.crewcount }}{% if form.crewcount.errors %}{% for error in form.crewcount.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.adminbase.errors %} has-error{% endif %}">{{ form.adminbase }}{% if form.adminbase.errors %}{% for error in form.adminbase.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.cor.errors %} has-error{% endif %}">{{ form.cor }}{% if form.cor.errors %}{% for error in form.cor.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td><button type="submit" class="btn btn-xs btn-primary">Save</button>
+		<a class="btn btn-xs btn-default" href="{% if object %}{% url 'flight-airplane-contractlist' object.tail object.name %}{% else %}{% url 'flight-contract-list' %}{% endif %}">Cancel</a></td>
+	</tr>
+	{% csrf_token %}
+{% endif %}
+{% for fee in object_list %}
+{% ifnotequal fee thecontract %}
+	<tr {% ifchanged fee.airplane %}{% cycle 'zg' '' as rowcolors silent %}{% endifchanged %}{% ifchanged fee.airplane fee.effectivedate %}class="{{ rowcolors }}"{% else %}class="{{ rowcolors }}"{% endifchanged %}>
+		<td><a href="{% url 'flight-airplane-detail' fee.airplane.tail fee.airplane.name %}">{{ fee.airplane.name }}</a></td>
+		<td>{% if fee.ct %}{{ fee.get_ct_display }}{% else %}--{% endif %}</td>
+		<td>{{ fee.effectivedate|date:"Y M d" }}</td>
+		<td>{% if fee.contractor %}{{ fee.contractor }}{% else %}--{% endif %}</td>
+		<td>{% if fee.contract %}{{ fee.contract }}{% else %}--{% endif %}</td>
+		<td>{% if fee.contractgallons %}{{ fee.contractgallons }}{% else %}--{% endif %}</td>
+		<td>{% if fee.daysoff %}{% if fee.daysoff|slice:':1' = '0' %}Su {% endif %}{% if fee.daysoff|slice:'1:2' = '0' %}Mo {% endif %}{% if fee.daysoff|slice:'2:3' = '0' %}Tu {% endif %}{% if fee.daysoff|slice:'3:4' = '0' %}We {% endif %}{% if fee.daysoff|slice:'4:5' = '0' %}Th {% endif %}{% if fee.daysoff|slice:'5:6' = '0' %}Fr {% endif %}{% if fee.daysoff|slice:'6:7' = '0' %}Sa {% endif %}{% endif %}</td>
+		<td>{% if fee.crewcount %}{{ fee.crewcount }}{% else %}--{% endif %}</td>
+		<td>{% if fee.adminbase %}<a href ='{% url 'flight-airbase-detail' fee.adminbase %}'>{{ fee.adminbase }}</a>{% else %}--{% endif %}</td>
+		<td>{% if fee.cor %}<a href="/user/{{ fee.cor }}/">{% if fee.cor.last_name and fee.cor.first_name %}{{ fee.cor.first_name|slice:"1" }} {{ fee.cor.last_name }}{% else %}{{ fee.cor }}{% endif %}</a>{% else %}--{% endif %}</td>
+		<td><small><a href="/user/{{ fee.author }}/">{% if fee.author.last_name and fee.author.first_name %}{{ fee.author.first_name|slice:"1" }} {{ fee.author.last_name }}{% else %}{{ fee.author }}{% endif %}</a></small> <a class="btn btn-xs btn-default pull-right" href="{% url 'flight-airplane-contract-edit' fee.airplane.tail fee.airplane.name fee.id %}">edit</button></td>
+	</tr>
+{% else %}
+<form method="POST" enctype="multipart/form-data" action="{% if thecontract %}{% url 'flight-airplane-contract-edit' thecontract.airplane.tail thecontract.airplane.name thecontract.id %}{% else %}{% if object %}{% url 'flight-airplane-contract-add' object.tail object.name %}{% else %}{% url 'flight-contract-add' %}{% endif %}{% endif %}">
+	<tr class='info'>
+		<td class="form-group{% if form.airplane.errors %} has-error{% endif %}">{% if form.airplane %}{{ form.airplane }}{% else %}<a href="{% url 'flight-airplane-detail' object.tail object.name %}">{{ object.name }}</a>{% endif %}{% if form.airplane.errors %}{% for error in form.airplane.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.ct.errors %} has-error{% endif %}">{{ form.ct }}{% if form.ct.errors %}{% for error in form.ct.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.effectivedate.errors %} has-error{% endif %}">{{ form.effectivedate }}{% if form.effectivedate.errors %}{% for error in form.effectivedate.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.contractor.errors %} has-error{% endif %}">{{ form.contractor }}{% if form.contractor.errors %}{% for error in form.contractor.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.contract.errors %} has-error{% endif %}">{{ form.contract }}{% if form.contract.errors %}{% for error in form.contract.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.contractgallons.errors %} has-error{% endif %}">{{ form.contractgallons }}{% if form.contractgallons.errors %}{% for error in form.contractgallons.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.daysoff.errors %} has-error{% endif %}">{{ form.daysoff }}{% if form.daysoff.errors %}{% for error in form.daysoff.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.crewcount.errors %} has-error{% endif %}">{{ form.crewcount }}{% if form.crewcount.errors %}{% for error in form.crewcount.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.adminbase.errors %} has-error{% endif %}">{{ form.adminbase }}{% if form.adminbase.errors %}{% for error in form.adminbase.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.cor.errors %} has-error{% endif %}">{{ form.cor }}{% if form.cor.errors %}{% for error in form.cor.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td>{% if thecontract %}<button type="submit" class="btn btn-xs btn-primary">Save</button>
+        <a class="btn btn-xs btn-default" href="{% if object %}{% url 'flight-airplane-contractlist' object.tail object.name %}{% else %}{% url 'flight-contract-list' %}{% endif %}">Cancel</a>
+        <a class="btn btn-xs btn-danger" href="{% url 'flight-airplane-contract-delete' thecontract.airplane.tail thecontract.airplane.name thecontract.id %}">Delete</a>
+        {% else %}
+        <button type="submit" class="btn btn-xs btn-primary">Save</button>
+        <a class="btn btn-xs btn-default" href="{% if object %}{% url 'flight-airplane-contractlist' object.tail object.name %}{% else %}{% url 'flight-contract-list' %}{% endif %}">Cancel</a>
+        {% endif %}</td>
+	</tr>
+	{% csrf_token %}
+</form>
+{% endifnotequal %}
+{% endfor %}
+	</tbody>
+ </table>
+</div>
+
+{% endblock %}
+
+{% block endscripts %}
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="/static/b-3.0.3/js/bootstrap.min.js"></script>
+<script src="/static/tablesorter/jquery.tablesorter.js"></script>
+<script type="text/javascript">
+$(function() {
+    $("#s1").tablesorter({
+	    headers: {
+	      1: { sorter: "uslongDate" } 
+	    }
+	});
+});
+</script>
+<link href='/static/datepicker/datepicker.css' rel='stylesheet' type='text/css'>
+<script src="/static/datepicker/bootstrap-datepicker.js"></script>
+<script>
+	$(function(){
+		$('#id_effectivedate').datepicker({
+			format: 'yyyy-mm-dd',
+			autoclose: 'True'
+		});
+	});
+</script>
+<script>
+$(function(){
+    $('.container').tooltip({
+      selector: "a[data-toggle=tooltip]",
+      //placement: 'right'
+    })
+});
+</script>
+{% endblock %}

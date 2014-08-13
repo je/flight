@@ -1,0 +1,132 @@
+{% extends "flight/index.html" %}
+
+{% block title %}
+<title>Airplane Fuelings</title>
+{% endblock %} 
+
+{% block content %}
+{% load humanize %}
+<h3><span class="" style="color:gainsboro;">&#x26FD;</span> {% if form %}{% if thefueling %}Editing{% else %}Adding{% endif %} a Fueling{% else %}{% if object_list %}<span class='ccalculated'>{{ object_list|length }}</span> Fueling{{ object_list|length|pluralize }}{% else %}<span class='ccalculated'>0</span> Fuelings{% endif %} {% if object %}for <quiet>Airplane</quiet> <a href="{% url 'flight-airplane-detail' object.tail object.name %}">{{ object.name }}</a> (<a href="{% url 'flight-airplane-detail' object.tail object.name %}">{{ object.tail }}</a>){% else %}for All Airplanes{% endif %}{% if not form and not thefueling %}<span class="pull-right">{% if objectx %}<a class="btn btn-xs btn-success" href="{% url 'flight-fueling-add' object.tail object.name %}">Add fueling for this airplane</a>{% else %}<a class="btn btn-xs btn-success" href="{% url 'flight-fueling-add' %}">Add fueling</a>{% endif %}</span>{% endif %}{% endif %}</h3>
+<h5><quiet>Fuelings hold details of airplane fuel purchases.</quiet></h5>
+
+<div>
+ <table class="table table-bordered table-condensed table-hover s" id="s1">
+	<thead>
+	<th>Airplane</th>
+	<th>Gal</th>
+	<th>Price</th>
+	<th>Cost</th>
+	<th>Type</th>
+	<th>Fueling Base</th>
+	<th>Fueling Time</th>
+	<th>Receipt</th>
+	<th>Reported By</th>
+	</thead>
+	<tbody>
+{% block form %}
+{% if fork %}
+
+{% endif %}
+{% endblock %}
+{% if form %}
+<form method="POST" enctype="multipart/form-data" action="{% if thefueling %}{% url 'flight-fueling-edit' thefueling.id %}{% else %}{% if objectx %}{% url 'flight-airplane-fueling-add' object.tail object.name %}{% else %}{% url 'flight-fueling-add' %}{% endif %}{% endif %}">
+	<tr class='info'>
+		{% if form.non_field_errors %}{% for error in form.non_field_errors %}
+		<div class="alert alert-danger">
+		{{ error|escape }}
+		</div>
+		{% endfor %}{% endif %}
+		<td class="form-group{% if form.airplane.errors %} has-error{% endif %}">{% if form.airplane %}{{ form.airplane }}{% else %}<a href="{% url 'flight-airplane-detail' object.tail object.name %}">{{ object.name }}</a>{% endif %}{% if form.airplane.errors %}{% for error in form.airplane.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.fuelgal.errors %} has-error{% endif %}">{{ form.fuelgal }}{% if form.fuelgal.errors %}{% for error in form.fuelgal.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.galprice.errors %} has-error{% endif %}">{{ form.galprice }}{% if form.galprice.errors %}{% for error in form.galprice.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.fuelcost.errors %} has-error{% endif %}">{{ form.fuelcost }}{% if form.fuelcost.errors %}{% for error in form.fuelcost.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.fueltype.errors %} has-error{% endif %}">{{ form.fueltype }}{% if form.fueltype.errors %}{% for error in form.fueltype.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.fuelbase.errors %} has-error{% endif %}">{{ form.fuelbase }}{% if form.fuelbase.errors %}{% for error in form.fuelbase.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.fueltime.errors %} has-error{% endif %}">{{ form.fueltime }}{% if form.fueltime.errors %}{% for error in form.fueltime.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.afile.errors %} has-error{% endif %}">{{ form.afile }}{% if form.afile.errors %}{% for error in form.afile.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td>{% if thefueling %}<button type="submit" class="btn btn-xs btn-primary">Save</button>
+        <a class="btn btn-xs btn-default" href="{% if object %}{% url 'flight-airplane-fueling-list' object.tail object.name %}{% else %}{% url 'flight-fueling-list' %}{% endif %}">Cancel</a>
+        <a class="btn btn-xs btn-danger" href="{% url 'flight-fueling-delete' thefueling.id %}">Delete</a>
+        {% else %}
+        <button type="submit" class="btn btn-xs btn-primary">Save</button>
+        <a class="btn btn-xs btn-default" href="{% if object %}{% url 'flight-airplane-fueling-list' object.tail object.name %}{% else %}{% url 'flight-fueling-list' %}{% endif %}">Cancel</a>
+        {% endif %}</td>
+	</tr>
+	{% csrf_token %}
+</form>
+{% endif %}
+
+{% for fee in object_list %}
+{% ifnotequal fee thefueling %}
+	<tr {% ifchanged fee.airplane %}{% cycle 'zg' '' as rowcolors silent %}{% endifchanged %}{% ifchanged fee.airplane fee.effectivedate %}class="{{ rowcolors }}"{% else %}class="{{ rowcolors }}"{% endifchanged %}>
+		<td><a href="{% url 'flight-airplane-detail' fee.airplane.tail fee.airplane.name %}">{{ fee.airplane.name }}</a> {% if object %}<a href="{% url 'flight-fueling-list' %}"><i class='glyphicon glyphicon-filter pull-right' style='color:gainsboro;'></i>{% else %}<a href="{% url 'flight-airplane-fueling-list' fee.airplane.tail fee.airplane.name %}"><i class='glyphicon glyphicon-filter pull-right'></i>{% endif %}</a></td>
+		<td>{% if fee.fuelgal %}{{ fee.fuelgal }}{% else %}--{% endif %}</td>
+		<td>{% if fee.galprice %}{{ fee.galprice }}{% else %}--{% endif %}</td>
+		<td>{% if fee.fuelcost %}{{ fee.fuelcost }}{% else %}--{% endif %}</td>
+		<td>{% if fee.fueltype %}{{ fee.fueltype }}{% else %}--{% endif %}</td>
+		<td>{% if fee.fuelbase %}<a href ='{% url 'flight-airbase-detail' fee.fuelbase %}'>{{ fee.fuelbase }}</a>{% else %}--{% endif %}</td>
+		<td>{% if fee.fueltime %}{{ fee.fueltime|date:"Y M d" }}{% else %}--{% endif %}</td>
+		<td>{% if fee.afile %}<a href="/ufs/{{ fee.afile }}">{{ fee.afile }}</a>{% else %}--{% endif %}</td>
+		<td><small><a href="/user/{{ fee.author }}/">{% if fee.author.last_name and fee.author.first_name %}{{ fee.author.first_name|slice:"1" }} {{ fee.author.last_name }}{% else %}{{ fee.author }}{% endif %}</a></small> <a class="btn btn-xs btn-default pull-right" href="{% url 'flight-fueling-edit' fee.id %}">edit</button></td>
+	</tr>
+{% else %}
+<form method="POST" enctype="multipart/form-data" action="{% if thefueling %}{% url 'flight-fueling-edit' thefueling.id %}{% else %}{% if objectx %}{% url 'flight-airplane-fueling-add' object.tail object.name %}{% else %}{% url 'flight-fueling-add' %}{% endif %}{% endif %}">
+	<tr class='info'>
+		<td class="form-group{% if form.airplane.errors %} has-error{% endif %}">{% if form.airplane %}{{ form.airplane }}{% else %}<a href="{% url 'flight-airplane-detail' object.tail object.name %}">{{ object.name }}</a>{% endif %}{% if form.airplane.errors %}{% for error in form.airplane.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.fuelgal.errors %} has-error{% endif %}">{{ form.fuelgal }}{% if form.fuelgal.errors %}{% for error in form.fuelgal.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.galprice.errors %} has-error{% endif %}">{{ form.galprice }}{% if form.galprice.errors %}{% for error in form.galprice.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.fuelcost.errors %} has-error{% endif %}">{{ form.fuelcost }}{% if form.fuelcost.errors %}{% for error in form.fuelcost.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.fueltype.errors %} has-error{% endif %}">{{ form.fueltype }}{% if form.fueltype.errors %}{% for error in form.fueltype.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.fuelbase.errors %} has-error{% endif %}">{{ form.fuelbase }}{% if form.fuelbase.errors %}{% for error in form.fuelbase.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.fueltime.errors %} has-error{% endif %}">{{ form.fueltime }}{% if form.fueltime.errors %}{% for error in form.fueltime.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.afile.errors %} has-error{% endif %}">{{ form.afile }}{% if form.afile.errors %}{% for error in form.afile.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td>{% if thefueling %}<button type="submit" class="btn btn-xs btn-primary">Save</button>
+        <a class="btn btn-xs btn-default" href="{% if object %}{% url 'flight-airplane-fueling-list' object.tail object.name %}{% else %}{% url 'flight-fueling-list' %}{% endif %}">Cancel</a>
+        <a class="btn btn-xs btn-danger" href="{% url 'flight-fueling-delete' thefueling.id %}">Delete</a>
+        {% else %}
+        <button type="submit" class="btn btn-xs btn-primary">Save</button>
+        <a class="btn btn-xs btn-default" href="{% if object %}{% url 'flight-airplane-fueling-list' object.tail object.name %}{% else %}{% url 'flight-fueling-list' %}{% endif %}">Cancel</a>
+        {% endif %}</td>
+	</tr>
+	{% csrf_token %}
+</form>
+{% endifnotequal %}
+{% endfor %}
+	</tbody>
+ </table>
+</div>
+
+{% endblock %}
+
+{% block endscripts %}
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="/static/b-3.0.3/js/bootstrap.min.js"></script>
+<script src="/static/tablesorter/jquery.tablesorter.js"></script>
+<script type="text/javascript">
+$(function() {
+    $("#s1").tablesorter({
+	    headers: {
+	      6: { sorter: "uslongDate" } 
+	    }
+	});
+});
+</script>
+<link href='/static/datepicker/datepicker.css' rel='stylesheet' type='text/css'>
+<script src="/static/datepicker/bootstrap-datepicker.js"></script>
+<script>
+	$(function(){
+		$('#id_fueltime').datepicker({
+			format: 'yyyy-mm-dd',
+			autoclose: 'True'
+		});
+	});
+</script>
+<script>
+$(function(){
+    $('.container').tooltip({
+      selector: "a[data-toggle=tooltip]",
+      //placement: 'right'
+    })
+});
+</script>
+{% endblock %}

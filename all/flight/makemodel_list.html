@@ -1,0 +1,33 @@
+{% extends "flight/fairs.html" %}
+
+{% block content %}
+{% load humanize %}
+        <h1 style="margin: 30px">Make:Models</h1>
+        <div style="margin: 30px">
+        This page is intended to serve as a reference sheet for use in filling out the Cost data sheets in this template. This sheet contains accepted values for the "Manufacturer Model" field. Only values matching those presented in this list will be able to be uploaded. Any other values will cause the entire template to be rejected by the FAIRS system. Use the values in the table below. 
+        </div>
+        <div style="margin: 30px">
+            {% if makemodel_list %}
+            <table class="table table-striped">
+                <tr>
+                <th>Make:Model</th>
+                <th></th>
+                <th></th>
+                </tr>
+                {% for makemodel in makemodel_list %}
+                    <tr>
+                        <td>{{ makemodel.makemodel }}</td>
+                        <td><a href="{% url 'edit_makemodel' makemodel.pk %}">edit</a></td>
+                        <td>
+                            <form method="POST" action="{% url 'delete_makemodel' makemodel.pk %}">
+                                {% csrf_token %}
+                                <input type="submit" class="btn btn-sm btn-danger" value="delete"></input>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+            <p><a href="{% url 'create_makemodel' %}">New make:model</a></p>
+        </div>
+{% endblock %}

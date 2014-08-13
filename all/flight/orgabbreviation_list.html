@@ -1,0 +1,33 @@
+{% extends "flight/fairs.html" %}
+
+{% block content %}
+{% load humanize %}
+        <h1 style="margin: 30px">Org Abbreviations</h1>
+        <div style="margin: 30px">
+        Values in this field must represent a valid abbreviation associated with an organization found in the FAIRS system. Data will only be imported for organizations for which you have permission to enter data. See the FAIRS system for a current list of valid organization abbreviations. 
+        </div>
+        <div style="margin: 30px">
+            {% if orgabbreviation_list %}
+            <table class="table table-striped">
+                <tr>
+                <th>OrgAbbreviation</th>
+                <th></th>
+                <th></th>
+                </tr>
+                {% for orgabbreviation in orgabbreviation_list %}
+                    <tr>
+                        <td>{{ orgabbreviation.orgabbreviation }}</td>
+                        <td><a href="{% url 'edit_orgabbreviation' orgabbreviation.pk %}">edit</a></td>
+                        <td>
+                            <form method="POST" action="{% url 'delete_orgabbreviation' orgabbreviation.pk %}">
+                                {% csrf_token %}
+                                <input type="submit" class="btn btn-sm btn-danger" value="delete"></input>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+            <p><a href="{% url 'create_orgabbreviation' %}">New org abbreviation</a></p>
+        </div>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends "flight/index.html" %}
+
+{% block title %}
+<title>Log{% if adate %} &sect {% if year %}{{ adate|date:"Y" }}{% elif mo %}{{ adate|date:"Y M" }}{% else %}{{ adate|date:"Y M d" }}{% endif %}{% if bdate %} - {{ bdate|date:"Y M d" }}{% endif %}{% else %}{% endif %}</title>
+{% endblock %} 
+
+{% block pagetitle %}
+{% endblock %}
+
+{% block content %}
+<h3>Log
+
+{% if adate %}
+{% else %}
+<form class="form-inline pull-right" onsubmit="location.href='/log/' + document.getElementById('adate').value + '/' + document.getElementById('bdate').value; return false;">
+<div class="input-group">
+<span class="input-group-addon" style='vertical-align:middle;'><i class="glyphicon glyphicon-calendar"></i></span>
+  <input class="input-sm" type="text" id="adate" {% if adate %}value="{{ adate|date:"Y-m-d" }}" placeholder="{{ adate|date:"Y-m-d" }}"{% endif %}/>
+</div>
+<div class="input-group">
+<span class="input-group-addon" style='vertical-align:middle;'><i class="glyphicon glyphicon-calendar"></i></span>
+  <input class="input-sm" type="text" id="bdate" {% if bdate %}value="{{ bdate|date:"Y-m-d" }}" placeholder="{{ bdate|date:"Y-m-d" }}"{% endif %}/>
+</div>
+  <button type="submit" class="btn btn-sm">Filter</button>
+</form> 
+{% endif %}
+
+</h3>
+{% if adate %}
+<h5 class='row' style='margin-left:0px;margin-bottom:0px;'><quiet>This is a {% if year %}year{% elif mo %}month{% else %}date{% endif %}{% if bdate %}-to-date{% else %}-based{% endif %} log report.</quiet>{% if adate %}
+<form class="form-inline pull-right" onsubmit="location.href='/log/' + document.getElementById('adate').value + '/' + document.getElementById('bdate').value; return false;">
+<div class="input-group">
+<span class="input-group-addon" style='vertical-align:middle;'><i class="glyphicon glyphicon-calendar"></i></span>
+  <input class="input-sm" type="text" id="adate" {% if adate %}value="{{ adate|date:"Y-m-d" }}" placeholder="{{ adate|date:"Y-m-d" }}"{% endif %}/>
+</div>
+<div class="input-group">
+<span class="input-group-addon" style='vertical-align:middle;'><i class="glyphicon glyphicon-calendar"></i></span>
+  <input class="input-sm" type="text" id="bdate" {% if bdate %}value="{{ bdate|date:"Y-m-d" }}" placeholder="{{ bdate|date:"Y-m-d" }}"{% endif %}/>
+</div>
+  <button type="submit" class="btn btn-sm">Filter</button>
+</form> 
+{% endif %}</h5>
+{% else %}
+
+{% if user.is_authenticated %}
+<h6><quiet>Daily and cumulative actions for your user</quiet></h6>
+<div class="row">
+	{% if logitems %}
+		<div class="span">
+			<img src="http://chart.apis.google.com/chart?cht=bvg&chbh=r,0.5,.75&chs=960x100&chco=00FF00,000000,FF0000&chd=t:{% for month in u_dates reversed %}{{ month.scount }}{% if not forloop.last %},{% endif %}{% endfor %}|{% for month in u_dates reversed %}{{ month.wcount }}{% if not forloop.last %},{% endif %}{% endfor %}|{% for month in u_dates reversed %}{{ month.ecount }}{% if not forloop.last %},{% endif %}{% endfor %}&chds=0,{{ umax }}&chxt=x,y&chxl=0:{% for month in u_dates reversed %}|{{ month.label|date:"M"|slice:":3" }}{% endfor %}|1:||{{ umax }}"><br />
+			<br />
+		</div>
+		<div class="span">
+			<img src="http://chart.apis.google.com/chart?cht=lc&chs=960x100&chco=00FF00,000000,FF0000&chd=t:{% for month in u_dates reversed %}{{ month.cums }}{% if not forloop.last %},{% endif %}{% endfor %}|{% for month in u_dates reversed %}{{ month.cumw }}{% if not forloop.last %},{% endif %}{% endfor %}|{% for month in u_dates reversed %}{{ month.cume }}{% if not forloop.last %},{% endif %}{% endfor %}&chds=0,{{ ucount }}&chxt=x,y&chxl=0:{% for month in u_dates reversed %}|{{ month.label|date:"M"|slice:":3" }}{% endfor %}|1:||{{ ucount }}"><br />
+			<br />
+		</div>
+	{% endif %}
+</div>
+{% endif %}
+
+<h6><quiet>Daily and cumulative actions for all users</quiet></h6>
+
+<div class="row">
+	{% if logitems %}
+		<div class="span">
+			<img src="http://chart.apis.google.com/chart?cht=bvg&chbh=r,0.5,.75&chs=960x100&chco=00FF00,000000,FF0000&chd=t:{% for month in entry_dates reversed %}{{ month.scount }}{% if not forloop.last %},{% endif %}{% endfor %}|{% for month in entry_dates reversed %}{{ month.wcount }}{% if not forloop.last %},{% endif %}{% endfor %}|{% for month in entry_dates reversed %}{{ month.ecount }}{% if not forloop.last %},{% endif %}{% endfor %}&chds=0,{{ lmax }}&chxt=x,y&chxl=0:{% for month in entry_dates reversed %}|{{ month.label|date:"M"|slice:":3" }}{% endfor %}|1:||{{ lmax }}"><br />
+			<br />
+		</div>
+		<div class="span">
+			<img src="http://chart.apis.google.com/chart?cht=lc&chs=960x100&chco=00FF00,000000,FF0000&chd=t:{% for month in entry_dates reversed %}{{ month.cums }}{% if not forloop.last %},{% endif %}{% endfor %}|{% for month in entry_dates reversed %}{{ month.cumw }}{% if not forloop.last %},{% endif %}{% endfor %}|{% for month in entry_dates reversed %}{{ month.cume }}{% if not forloop.last %},{% endif %}{% endfor %}&chds=0,{{ lcount }}&chxt=x,y&chxl=0:{% for month in entry_dates reversed %}|{{ month.label|date:"M"|slice:":3" }}{% endfor %}|1:||{{ lcount }}"><br />
+			<br />
+		</div>
+	<div class='span'>
+	</div>
+	{% endif %}
+</div>
+{% endif %}
+
+{% if not adate %}
+{% endif %}
+{% endblock %}
+
+{% block endscripts %}
+<link href='/static/datepicker/datepicker.css' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="/static/tablesorter/jquery.tablesorter.js"></script>
+<script type="text/javascript">
+$(function() {
+    $("#s0").tablesorter();
+});
+</script>
+<script type="text/javascript">
+$(function() {
+    $("#s1").tablesorter({
+	    headers: {
+	      1: { sorter: "text" },
+	      2: { sorter: "uslongDate" }
+	    }
+	});
+    $("#s2").tablesorter({
+	    headers: {
+	      2: { sorter: "uslongDate" }
+	    }
+	});
+});
+</script>
+<script src="/static/datepicker/bootstrap-datepicker.js"></script>
+<script>
+$(function(){
+	$('#adate').datepicker({
+		format: 'yyyy-mm-dd',
+		autoclose: 'True'
+	});
+	$('#bdate').datepicker({
+		format: 'yyyy-mm-dd',
+		autoclose: 'True'
+	});
+});
+</script>
+<script>
+$(function(){
+    $('.container').tooltip({
+      selector: "a[data-toggle=tooltip]",
+      //placement: 'right'
+    })
+});
+</script>
+{% endblock %}

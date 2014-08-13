@@ -1,0 +1,33 @@
+{% extends "flight/fairs.html" %}
+
+{% block content %}
+{% load humanize %}
+        <h1 style="margin: 30px">Mission Codes</h1>
+        <div style="margin: 30px">
+        This page is intended to serve as a reference sheet for use in filling out the Hours data sheet in this template. This sheet contains accepted values for the "Mission" field. Only values matching those presented in this list will be able to be uploaded. Any other values will cause the entire template to be rejected by the FAIRS system. Use the yellow highlighted values in the tables below. 
+        </div>
+        <div style="margin: 30px">
+            {% if missioncode_list %}
+            <table class="table table-striped">
+                <tr>
+                <th>MissionCode</th>
+                <th></th>
+                <th></th>
+                </tr>
+                {% for missioncode in missioncode_list %}
+                    <tr>
+                        <td>{{ missioncode.missioncode }}</td>
+                        <td><a href="{% url 'edit_missioncode' missioncode.pk %}">edit</a></td>
+                        <td>
+                            <form method="POST" action="{% url 'delete_missioncode' missioncode.pk %}">
+                                {% csrf_token %}
+                                <input type="submit" class="btn btn-sm btn-danger" value="delete"></input>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+            <p><a href="{% url 'create_missioncode' %}">New mission code</a></p>
+        </div>
+{% endblock %}

@@ -1,0 +1,173 @@
+{% extends "base2.html" %}
+ 
+{% block title %}
+<title>FLiGHT | FAIRS</title>
+{% endblock %} 
+
+  {% block maincss %}
+    <!-- Bootstrap core CSS -->
+    <link href="/static/b-3.0.3/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="/static/b-3.0.3/sticky-footer-navbar.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="/static/b-3.0.3/html5shiv.js"></script>
+      <script src="/static/b-3.0.3/respond.min.js"></script>
+    <![endif]-->
+  {% endblock %}
+
+{% block favico %} 
+{% endblock %}
+
+{% block brand %}
+<a class="navbar-brand" style="height:30px;padding:5px 5px 5px 15px;" href="{% url 'flight-fairs' %}"><strong>FAIRS</strong></a>
+{% endblock %}
+
+{% block nav %} 
+  <li class="dropdown hidden-print"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Costs<b class="caret"></b></a>
+    <ul class="dropdown-menu nav-stacked">
+    <li><a href="{% url 'list_costentry' %}">All cost entries</a></li>
+    <li><a href="{% url 'create_costentry' %}">New cost entry</a></li>
+    </ul>
+  </li>
+  <li class="dropdown hidden-print"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Hours <b class="caret"></b></a>
+    <ul class="dropdown-menu nav-stacked">
+     <li><a href="{% url 'list_hoursentry' %}">All hours entries</a></li>
+     <li><a href="{% url 'create_hoursentry' %}">New hours entry</a></li>
+    </ul>
+  </li>
+  <li class="dropdown hidden-print"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Reference <b class="caret"></b></a>
+    <ul class="dropdown-menu nav-stacked">
+     <li><a href="{% url 'list_orgabbreviation' %}">All org abbreviations</a></li>
+     <li><a href="{% url 'create_orgabbreviation' %}">New org abbreviation</a></li>
+     <li class='divider'></li>
+     <li><a href="{% url 'list_makemodel' %}">All aircraft models</a></li>
+     <li><a href="{% url 'create_makemodel' %}">New aircraft model</a></li>
+     <li class='divider'></li>
+     <li><a href="{% url 'list_serialnum' %}">All serial nums</a></li>
+     <li><a href="{% url 'create_serialnum' %}">New serial num</a></li>
+     <li class='divider'></li>
+     <li><a href="{% url 'list_costtype' %}">All cost types</a></li>
+     <li><a href="{% url 'create_costtype' %}">New cost type</a></li>
+     <li class='divider'></li>
+     <li><a href="{% url 'list_missioncode' %}">All mission codes</a></li>
+     <li><a href="{% url 'create_missioncode' %}">New mission code</a></li>
+    </ul>
+  </li>
+{% endblock %}
+
+{% block navuser %}
+<span class="navbar-text pull-right hidden-print">
+{% if user.is_authenticated %}
+<div>
+  <a href="/user/" style="text-decoration:none;color:rgb(102, 102, 102);">User</a> <a href="/user/{{ user.username }}/">{% if user.last_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</a> is logged in. <a href="/logout/?next={% url 'flight-index' %}">Logout</a>.
+</div>
+{% else %}
+<div>
+  You are not logged in. <a href="/login/?next={% url 'flight-index' %}">Login</a> or <a href="/signup/">Register</a>.
+</div>
+{% endif %}
+</span>
+{% endblock %}
+
+{% block pagetitle %}
+{% endblock %}
+
+{% block content %}
+{% load humanize %}
+{% if not u %}
+
+<style>
+body {
+  background:url('/static/images/4418610921_a39bc01fff_b.jpg') no-repeat;
+  background-attachment: fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  background-size: cover;
+}
+</style>
+<br />
+
+<!-- START THE FEATURETTES -->
+<div>
+
+<div class="featurette well" id="one" style="max-width:600px;">
+<h3 class="featurette-heading">In a World of 'Whys'</h3>
+<h3><quiet><styled>FLiGHT</styled> solves for X</quiet></h3>
+<p class="lead">How? Mostly, it's a database of aircraft operations, retardant use, and associated costs. These data are processed and aggregated into various products that will answer your questions, or keep others from asking you for answers.</p>
+</div>
+
+<div class="featurette well" id="two" style="max-width:600px;">
+<h3 class="featurette-heading">When Danger Looms</h3>
+<h3><quiet><styled>FLiGHT</styled> is everywhere at once</quiet></h3>
+<p class="lead">Unilke yesterday's software, <styled>FLiGHT</styled> has no clunky downloads, messy installers, or wasteful packaging. It's on the actual internet so we can all work together better. And <styled>FLiGHT</styled> is free as in cheap: No hidden charges or monthly fees, no salesmen will call.</p>
+</div>
+
+<div class="featurette well" id="three" style="max-width:600px;">
+<h3 class="featurette-heading">Getting Started?</h3>
+<h3><quiet><styled>FLiGHT</styled> could be easier than you think</quiet></h3>
+<p class="lead">If you are an airbase manager or affiliate and want to use <styled>FLiGHT</styled>, <a href='/signup/'>register for a user account</a> and email <a>xx@xxxx.xxx</a> so we know you aren't just some nodbody from the internet. Include your airbase details and we'll make sure you have write permissions at your airbases. Thanks!</p>
+</div>
+
+</div>
+<!-- /END THE FEATURETTES -->
+
+</div>
+
+</div>
+{% else%}
+
+{% with u as person %}
+        <div class="alert alert-info" style='margin-top:10px;padding-top:5px;padding-bottom:5px;'>
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <strong>Beware:</strong> This 'application' represents the FAIRS data entry and reference spreadsheets, and all documentation is copied directly from that source.
+        </div>
+        <div style="margin: 30px">
+        <p>
+        This file is a Microsoft Excel workbook composed of six worksheets (note the six tabs at the bottom of this worksheet). Use the second and third worksheets (Cost and Hours) to upload Federal aircraft operational data into the FAIRS system. The last three worksheets provide reference values for certain fields on each data sheet. In order to use this template, you should first make a copy of this file and name it appropriately as to what the contents of the file will be (e.g., DOE_FY2006_Q1.xls). You should avoid special characters or spaces in the file name. Next, in either the Cost or Hours worksheet, you should enter data rows, conforming to the format defined, or paste data into the sheets from another source if possible. If you are pasting data from another document, you need to ensure that the values in the data sheet are all valid and contained in the attached Reference sheets where necessary. If any values cannot be matched with values in the appropriate reference sheet, the import will fail. Where possible, fields that must contain exact values have been linked to the reference sheets to provide a drop-down list of values inside the spreadsheet cells.
+        </p>
+        <p>
+        It is important that aircraft identification values correspond to a record already in the FAIRS system. Each row of data you enter must contain a manufacturer, model and serial number which matches exactly with an aircraft record in FAIRS. If any values cannot be matched with an existing record in FAIRS, the import will fail.
+        </p>
+        <p>
+        When you see a small red triangle symbol in the corner of a cell, you can place the cursor over that triangle to see embedded instructions or examples.
+        </p>
+        <p>
+        Once you are sure your data is complete and properly formatted, log onto the FAIRS system at http://gsa.inl.gov/fairs and navigate to the Data Import screen. Find the data upload utility on the page, and click on the browse button to find this file on your computer hard drive. After you have selected the file you intend to upload, click the upload button. The system will notify you as to the success or failure of the upload. If there are problems with the upload, fix the errors noted and try to import again.
+        </p>
+        </div>
+{% endwith %}
+{% endif %}
+{% endblock %}
+
+{% block endscripts %}
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="/static/b-3.0.3/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://login.persona.org/include.js"></script>
+<script type="text/javascript" src="/static/browserid/browserid.js"></script>
+<script type="text/javascript" src="/static/tablesorter/jquery.tablesorter.js"></script>
+<script type="text/javascript">
+$(function() {
+    $("#s1").tablesorter({
+      headers: {
+        2: { sorter: "uslongDate" }
+      }
+  });
+    $("#s2").tablesorter({
+      headers: {
+        1: { sorter: "uslongDate" }
+      }
+  });
+});
+</script>
+<script type="text/javascript" >
+$(function(){
+    $('.container').tooltip({
+      selector: "a[data-toggle=tooltip]"
+    })
+});
+</script>
+
+{% endblock %}

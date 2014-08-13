@@ -1,0 +1,178 @@
+{% extends "flight/index.html" %}
+
+{% block title %}
+<title>Airplane Clock Rates</title>
+{% endblock %} 
+
+{% block content %}
+{% load humanize %}
+<h3><i class="glyphicon glyphicon-usd" style="color:gainsboro;"></i> {% if object_list %}<span class='ccalculated'>{{ object_list|length }}</span> Clock Rate{{ object_list|length|pluralize }}{% else %}<span class='ccalculated'>0</span> Clock Rates{% endif %} {% if object %}for <quiet>Airplane</quiet> <a href="{% url 'flight-airplane-detail' object.tail object.name %}">{{ object.name }}</a> (<a href="{% url 'flight-airplane-detail' object.tail object.name %}">{{ object.tail }}</a>){% else %}for All Airplanes{% endif %}{% if not form and not therate %}<span class="pull-right">{% if object %}<a class="btn btn-xs btn-success" href="{% url 'flight-airplane-rate-add' object.tail object.name %}">Add clock rate for this airplane</a>{% else %}<a class="btn btn-xs btn-success" href="{% url 'flight-rate-add' %}">Add clock rate</a>{% endif %}</span>{% endif %}</h3>
+<h5><quiet>Clock rates are flight rates, availability rates, and other time-based airplane charges. Clock rates are applied until superseded by a newer rate of the same type, and all are billed against the incident flown except where a single funding source is specified with the rate.</quiet></h5>
+
+<div>
+ <table class="table table-bordered table-condensed table-hover s" id="s1">
+	<thead>
+	<th>Airplane</th>
+	<th>Date Effective</th>
+	<th>Rate Type</th>
+	<th>Funding</th>
+	<th>Dollars</th>
+	<th>Unit</th>
+	<th>Reported By</th>
+	</thead>
+	<tbody>
+{% block form %}
+{% if fork %}
+
+{% endif %}
+{% endblock %}
+{% if form and not therate %}
+<form method="POST" enctype="multipart/form-data" action="{% if therate %}{% url 'flight-airplane-rate-edit' therate.airplane.tail therate.airplane.name therate.id %}{% else %}{% if object %}{% url 'flight-airplane-rate-add' object.tail object.name %}{% else %}{% url 'flight-rate-add' %}{% endif %}{% endif %}">
+	<tr class='info'>
+		{% if form.non_field_errors %}{% for error in form.non_field_errors %}
+		<div class="alert alert-danger">
+		{{ error|escape }}
+		</div>
+		{% endfor %}{% endif %}
+		<td class="form-group{% if form.airplane.errors %} has-error{% endif %}">{% if form.airplane %}{{ form.airplane }}{% else %}<a href="{% url 'flight-airplane-detail' object.tail object.name %}">{{ object.name }}</a>{% endif %}{% if form.airplane.errors %}{% for error in form.airplane.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.effectivedate.errors %} has-error{% endif %}">{{ form.effectivedate }}{% if form.effectivedate.errors %}{% for error in form.effectivedate.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.ratetype.errors %} has-error{% endif %}">{{ form.ratetype }}{% if form.ratetype.errors %}{% for error in form.ratetype.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.incident.errors %} has-error{% endif %}">{{ form.incident }}{% if form.incident.errors %}{% for error in form.incident.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class='form-group{% if form.cost.errors %} has-error{% endif %} number'>{{ form.cost }}{% if form.cost.errors %}{% for error in form.cost.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class='form-group{% if form.perwhat.errors %} has-error{% endif %} number'>{{ form.perwhat }}{% if form.perwhat.errors %}{% for error in form.perwhat.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td><button type="submit" class="btn btn-xs btn-primary">Save</button>
+		<a class="btn btn-xs btn-default" href="{% if object %}{% url 'flight-airplane-ratelist' object.tail object.name %}{% else %}{% url 'flight-rate-list' %}{% endif %}">Cancel</a></td>
+	</tr>
+	{% csrf_token %}
+{% endif %}
+{% for fee in object_list %}
+{% ifnotequal fee therate %}
+	<tr {% ifchanged fee.airplane %}{% cycle 'zg' '' as rowcolors silent %}{% endifchanged %}{% ifchanged fee.airplane fee.ratetype %}class="{{ rowcolors }}"{% else %}class="{{ rowcolors }}"{% endifchanged %}>
+		<td><a href="{% url 'flight-airplane-detail' fee.airplane.tail fee.airplane.name %}">{{ fee.airplane.name }}</a></td>
+		<td>{{ fee.effectivedate|date:"Y M d H:i" }}</td>
+		<td>{{ fee.ratetype }}</td>
+		<td>{% if fee.incident %}<a href='{% url 'flight-incident-detail' fee.incident.name fee.incident.resourceorder %}'>{{ fee.incident }}</a>{% endif %}</td>
+		<td class='number'>${{ fee.cost|floatformat:2|intcomma }}</td>
+		<td>{{ fee.perwhat }}</td>
+		<td><small><a href="/user/{{ fee.author }}/">{% if fee.author.last_name and fee.author.first_name %}{{ fee.author.first_name|slice:"1" }} {{ fee.author.last_name }}{% else %}{{ fee.author }}{% endif %}</a></small> <a class="btn btn-xs btn-default pull-right" href="{% url 'flight-airplane-rate-edit' fee.airplane.tail fee.airplane.name fee.id %}">edit</button></td>
+	</tr>
+{% else %}
+<form method="POST" enctype="multipart/form-data" action="{% if therate %}{% url 'flight-airplane-rate-edit' therate.airplane.tail therate.airplane.name therate.id %}{% else %}{% if object %}{% url 'flight-airplane-rate-add' object.tail object.name %}{% else %}{% url 'flight-rate-add' %}{% endif %}{% endif %}">
+	<tr class='info'>
+		<td class="form-group{% if form.airplane.errors %} has-error{% endif %}">{% if form.airplane %}{{ form.airplane }}{% else %}<a href="{% url 'flight-airplane-detail' object.tail object.name %}">{{ object.name }}</a>{% endif %}{% if form.airplane.errors %}{% for error in form.airplane.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.effectivedate.errors %} has-error{% endif %}">{{ form.effectivedate }}{% if form.effectivedate.errors %}{% for error in form.effectivedate.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.ratetype.errors %} has-error{% endif %}">{{ form.ratetype }}{% if form.ratetype.errors %}{% for error in form.ratetype.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.incident.errors %} has-error{% endif %}">{{ form.incident }}{% if form.incident.errors %}{% for error in form.incident.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class='form-group{% if form.cost.errors %} has-error{% endif %} number'>{{ form.cost }}{% if form.cost.errors %}{% for error in form.cost.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class='form-group{% if form.perwhat.errors %} has-error{% endif %} number'>{{ form.perwhat }}{% if form.perwhat.errors %}{% for error in form.perwhat.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td>{% if therate %}<button type="submit" class="btn btn-xs btn-primary">Save</button>
+        <a class="btn btn-xs btn-default" href="{% if object %}{% url 'flight-airplane-ratelist' object.tail object.name %}{% else %}{% url 'flight-rate-list' %}{% endif %}">Cancel</a>
+        <a class="btn btn-xs btn-danger" href="{% url 'flight-airplane-rate-delete' therate.airplane.tail therate.airplane.name therate.id %}">Delete</a>
+        {% else %}
+        <button type="submit" class="btn btn-xs btn-primary">Save</button>
+        <a class="btn btn-xs btn-default" href="{% if object %}{% url 'flight-airplane-ratelist' object.tail object.name %}{% else %}{% url 'flight-rate-list' %}{% endif %}">Cancel</a>
+        {% endif %}</td>
+	</tr>
+	{% csrf_token %}
+</form>
+{% endifnotequal %}
+{% endfor %}
+	</tbody>
+ </table>
+</div>
+{% if request.user.is_superuser %}
+
+<div class='row span'>
+
+{% regroup object_list|dictsort:"ratetype" by ratetype as type_list %}
+{% regroup object_list|dictsortreversed:"effectivedate" by effectivedate|date as date_list %}
+
+{% if object %}
+	<h5>It's {{ when }} and {{ object.name }} {{ object.mop|yesno:'is in MAP,is out of MAP' }}.</h5>
+{% endif %}
+
+	<div class='col-md-5'>
+
+	<dl class="dl-horizontal">
+	{% for type in type_list %}
+	    <dt>{% for item in type.list %}{% if forloop.first %}{{ item.airplane.name }}{% endif %}{% endfor %} {{ type.grouper }} 
+	    
+	        {% for item in type.list %}
+			{% ifequal item.upcoming False %}
+			{% ifchanged item.upcoming %}
+				<dd><span class='ored'>{{ item.cost }} {{ item.perwhat }} {{ item.upcoming|yesno:'upcoming,current, ' }}</span> {{ item.mop|yesno:'MAP, , ' }}</dd>
+	        {% else %}
+				<dd><quiet>{{ item.cost }} {{ item.perwhat }} {{ item.upcoming|yesno:'upcoming,expired, ' }}</quiet> {{ item.mop|yesno:'MAP, , ' }}</dd>
+			{% endifchanged %}
+			{% else %}
+				<dd><span class='fgreen'>{{ item.cost }} {{ item.perwhat }} {{ item.upcoming|yesno:'upcoming,current, ' }}</span> {{ item.mop|yesno:'MAP, , ' }}</dd>
+			{% endifequal %}
+	        {% endfor %}
+	    
+	    </dt>
+	{% endfor %}
+	</dl>
+
+	</div>
+
+	<div class='col-md-6'>
+
+	<dl class="dl-horizontal">
+	{% for date in date_list %}
+	    <dt>{% for item in date.list %}{% if forloop.first %}{{ item.airplane.name }}{% endif %}{% endfor %} {{ date.grouper }} 
+	    
+	        {% for item in date.list %}
+			{% ifequal item.upcoming False %}
+			{% ifequal item.ma True %}
+				<dd><strong>{{ item.cost }} {{ item.perwhat }} {{ item.ratetype }}</strong> {{ item.mop|yesno:'MAP, , ' }} [{{ item.ma }}]</dd>
+	        {% else %}
+				<dd><quiet>{{ item.cost }} {{ item.perwhat }} {{ item.ratetype }}</quiet> {{ item.mop|yesno:'MAP, , ' }} [{{ item.ma }}]</dd>
+			{% endifequal %}
+			{% else %}
+				<dd><span class='fgreen'>{{ item.cost }} {{ item.perwhat }} {{ item.ratetype }} {{ item.upcoming|yesno:'upcoming,current, ' }}</span> {{ item.mop|yesno:'MAP, , ' }} [{{ item.ma }}]</dd>
+			{% endifequal %}
+	        {% endfor %}
+	    
+	    </dt>
+	{% endfor %}
+	</dl>
+
+	</div>
+
+
+</div>
+{% endif %}
+{% endblock %}
+
+{% block endscripts %}
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="/static/b-3.0.3/js/bootstrap.min.js"></script>
+<script src="/static/tablesorter/jquery.tablesorter.js"></script>
+<script type="text/javascript">
+$(function() {
+    $("#s1").tablesorter({
+	    headers: {
+	      1: { sorter: "uslongDate" } 
+	    }
+	});
+});
+</script>
+<link href='/static/datepicker/datepicker.css' rel='stylesheet' type='text/css'>
+<script src="/static/datepicker/bootstrap-datepicker.js"></script>
+<script>
+	$(function(){
+		$('#id_effectivedate_0').datepicker({
+			format: 'yyyy-mm-dd',
+			autoclose: 'True'
+		});
+	});
+</script>
+<script>
+$(function(){
+    $('.container').tooltip({
+      selector: "a[data-toggle=tooltip]",
+      //placement: 'right'
+    })
+});
+</script>
+{% endblock %}

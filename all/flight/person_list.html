@@ -1,0 +1,40 @@
+{% extends "flight/index.html" %}
+
+{% block title %}
+<title>People</title>
+{% endblock %} 
+
+{% block content %}
+{% load humanize %}
+<h3><i class="glyphicon glyphicon-user" style="color:gainsboro;"></i> {% if person_list %}<span class='ccalculated'>{{ person_list|length }}</span> Pe{{ person_list|length|pluralize:"rson,ople" }} {% else %}<span class='ccalculated'>0</span> People {% endif %} <span class="pull-right"><a class="btn btn-xs btn-default" href="{% url 'flight-person-add' %}">Add person</a></span></h3>
+<h5><quiet>"Who are these people?" A 'person' is anyone who flies planes, handles contracts, or is otherwise needed as a name on a form somewhere. Click on its </quiet><strong>Name</strong><quiet> in the table below to get to a person's page.</quiet></h5>
+{% if person_list %}
+<div>
+ <table class="table table-bordered table-condensed table-hover s" id="s1">
+ 	<thead>
+	<th>Name</th>
+	<th>Job</th>
+	<th>Agency</th>
+	<th>Location</th>
+	<th>Flight Count</th>
+ 	</thead>
+ 	<tbody>
+{% for person in person_list %}
+	<tr>
+		<td><strong><a href="/person/{{ person.firstname }} {{ person.lastname }}/">{{ person.firstname }} {{ person.lastname }}</a></strong></td>
+		<td>{{ person.job }}</td>
+		<td>{{ person.agency }}</td>
+		<td>{% if person.city and person.state %}{{ person.city }}, {{ person.state|upper }}{% else %}{% if person.city %}{{ person.city }}{% endif %}{% endif %} {% if person.zip4 %}{{ person.zip4 }}{% endif %}</td>
+		<td class='number'><span class='ccalculated'>{% if person.trip_count %}{{ person.trip_count }}{% else %}0{% endif %}</span></td>
+	</tr>
+{% endfor %}
+ 	</tbody>
+  </table>
+</div>
+{% else %}
+<div>
+	No people. What?
+</div>
+{% endif %}
+{% endblock %}
+

@@ -1,0 +1,46 @@
+{% extends "flight/fairs.html" %}
+
+{% block content %}
+{% load humanize %}
+        <h1 style="margin: 30px">Hours Entries</h1>
+        <div style="margin: 30px">
+            {% if hoursentry_list %}
+            <table class="table table-striped">
+                <tr>
+                <th>OrgAbbreviation</th>
+                <th>Make:Model</th>
+                <th>SerialNum</th>
+                <th>Report Start Date</th>
+                <th>Report End Date</th>
+                <th>Mission Code</th>
+                <th>Flight Hours</th>
+                <th>R&D Hours</th>
+                <th>Alert Hours</th>
+                <th></th>
+                <th></th>
+                </tr>
+                {% for hoursentry in hoursentry_list %}
+                    <tr>
+                        <td>{{ hoursentry.orgabbreviation }}</td>
+                        <td>{{ hoursentry.makemodel }}</td>
+                        <td>{{ hoursentry.serialnum }}</td>
+                        <td>{{ hoursentry.reportstartdate }}</td>
+                        <td>{{ hoursentry.reportenddate }}</td>
+                        <td>{{ hoursentry.missioncode }}</td>
+                        <td>{{ hoursentry.flighthours }}</td>
+                        <td>{{ hoursentry.randhours }}</td>
+                        <td>{{ hoursentry.alerthours }}</td>
+                        <td><a href="{% url 'edit_hoursentry' hoursentry.pk %}">edit</a></td>
+                        <td>
+                            <form method="POST" action="{% url 'delete_hoursentry' hoursentry.pk %}">
+                                {% csrf_token %}
+                                <input type="submit" class="btn btn-sm btn-danger" value="delete"></input>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+            <p><a href="{% url 'create_hoursentry' %}">New hours entry</a></p>
+        </div>
+{% endblock %}

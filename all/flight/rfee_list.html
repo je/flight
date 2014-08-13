@@ -1,0 +1,117 @@
+{% extends "flight/index.html" %}
+
+{% block title %}
+<title>Airbase Retardant Prices</title>
+{% endblock %} 
+
+{% block content %}
+{% load humanize %}
+<h3><i class="glyphicon glyphicon-usd" style="color:gainsboro;"></i> {% if object_list %}<span class='ccalculated'>{{ object_list|length }}</span> Retardant Price{{ object_list|length|pluralize }}{% else %}<span class='ccalculated'>0</span> Retardant Prices{% endif %} {% if object %}at <quiet>Airbase</quiet> {{ object.name }} (<a href="{% url 'flight-airbase-detail' object.tla %}">{{ object.tla|upper }}</a>){% else %}at All Airbases{% endif %}{% if not form and not therfee %}<span class="pull-right">{% if object %}<a class="btn btn-xs btn-success" href="{% url 'flight-airbase-rfee-add' object.tla %}">Add retardant price at this airbase</a>{% else %}<a class="btn btn-xs btn-success" href="{% url 'flight-rfee-add' %}">Add retardant price</a>{% endif %}</span>{% endif %}</h3>
+<h5><quiet>Retardant prices are per gallon and/or per load costs for retardant at an airbase. Prices are by retardant type, and apply from 'date effective' until superseded. Each price is applied only when retardant pumped exceeds its 'volume' break.</quiet></h5>
+
+<div>
+ <table class="table table-bordered table-condensed table-hover s" id="s1">
+	<thead>
+	<th>Airbase</th>
+	<th>Date Effective</th>
+	<th>Retardant Type</th>
+	<th>Dollars per Gallon</th>
+	<th>Flat Fee</th>
+	<th>Volume</th>
+	<th>Reported By</th>
+	</thead>
+	<tbody>
+{% block form %}
+{% if fork %}
+
+{% endif %}
+{% endblock %}
+{% if form and not therfee %}
+<form method="POST" enctype="multipart/form-data" action="{% if therfee %}{% url 'flight-airbase-rfee-edit' therfee.airbase.tla therfee.id %}{% else %}{% if object %}{% url 'flight-airbase-rfee-add' object.tla %}{% else %}{% url 'flight-rfee-add' %}{% endif %}{% endif %}">
+	<tr class='info'>
+		{% if form.non_field_errors %}{% for error in form.non_field_errors %}
+		<div class="alert alert-danger">
+		{{ error|escape }}
+		</div>
+		{% endfor %}{% endif %}
+		<td class="form-group{% if form.airbase.errors %} has-error{% endif %}">{% if form.airbase %}{{ form.airbase }}{% else %}{{ object.name }} (<a href="{% url 'flight-airbase-detail' object.tla %}">{{ object.tla }}</a>){% endif %}{% if form.airbase.errors %}{% for error in form.airbase.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td>{{ form.effectivedate }}{% if form.effectivedate.errors %}{% for error in form.effectivedate.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.rtype.errors %} has-error{% endif %}">{{ form.rtype }}{% if form.rtype.errors %}{% for error in form.rtype.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class='form-group{% if form.cost.errors %} has-error{% endif %} number'>{{ form.cost }}{% if form.cost.errors %}{% for error in form.cost.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class='form-group{% if form.flat.errors %} has-error{% endif %} number'>{{ form.flat }}{% if form.flat.errors %}{% for error in form.flat.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class='form-group{% if form.volume.errors %} has-error{% endif %} number'>{{ form.volume }}{% if form.volume.errors %}{% for error in form.volume.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td><button type="submit" class="btn btn-xs btn-primary">Save</button>
+		<a class="btn btn-xs btn-default" href="{% if object %}{% url 'flight-airbase-rfeelist' object.tla %}{% else %}{% url 'flight-rfee-list' %}{% endif %}">Cancel</a></td>
+	</tr>
+	{% csrf_token %}
+{% endif %}
+{% for fee in object_list %}
+{% ifnotequal fee therfee %}
+	<tr {% ifchanged fee.airbase fee.rtype %}{% cycle 'zg' '' as rowcolors silent %}{% endifchanged %}{% ifchanged fee.airbase fee.rtype fee.volume %}class="{{ rowcolors }}"{% else %}class="{{ rowcolors }}"{% endifchanged %}>
+		<td>{{ fee.airbase.name }} (<a href="{% url 'flight-airbase-detail' fee.airbase.tla %}">{{ fee.airbase.tla }}</a>)</td>
+		<td>{{ fee.effectivedate|date:"Y M d H:i" }}</td>
+		<td>{{ fee.get_rtype_display }}</td>
+		<td class='number'>${{ fee.cost|floatformat:2|intcomma }}</td>
+		<td class='number'>${% if fee.flat|floatformat:2|intcomma %}{{ fee.flat }}{% else %}0{% endif %}</td>
+		<td class='number'>{{ fee.volume|intcomma }}</td>
+		<td><small><a href="/user/{{ fee.author }}/">{% if fee.author.last_name and fee.author.first_name %}{{ fee.author.first_name|slice:"1" }} {{ fee.author.last_name }}{% else %}{{ fee.author }}{% endif %}</a></small> <a class="btn btn-xs btn-default pull-right" href="{% url 'flight-airbase-rfee-edit' fee.airbase.tla fee.id %}">edit</a></td>
+	</tr>
+{% else %}
+<form method="POST" enctype="multipart/form-data" action="{% if therfee %}{% url 'flight-airbase-rfee-edit' therfee.airbase.tla therfee.id %}{% else %}{% if object %}{% url 'flight-airbase-rfee-add' object.tla %}{% else %}{% url 'flight-rfee-add' %}{% endif %}{% endif %}">
+	<tr class='info'>
+		<td class="form-group{% if form.airbase.errors %} has-error{% endif %}">{% if form.airbase %}{{ form.airbase }}{% else %}{{ object.name }} (<a href="{% url 'flight-airbase-detail' object.tla %}">{{ object.tla }}</a>){% endif %}{% if form.airbase.errors %}{% for error in form.airbase.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td>{{ form.effectivedate }}{% if form.effectivedate.errors %}{% for error in form.effectivedate.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class="form-group{% if form.rtype.errors %} has-error{% endif %}">{{ form.rtype }}{% if form.rtype.errors %}{% for error in form.rtype.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class='form-group{% if form.cost.errors %} has-error{% endif %} number'>{{ form.cost }}{% if form.cost.errors %}{% for error in form.cost.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class='form-group{% if form.flat.errors %} has-error{% endif %} number'>{{ form.flat }}{% if form.flat.errors %}{% for error in form.flat.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td class='form-group{% if form.volume.errors %} has-error{% endif %} number'>{{ form.volume }}{% if form.volume.errors %}{% for error in form.volume.errors %}<span class="help-inline">{{ error|escape }}</span>{% endfor %}{% endif %}</td>
+		<td>{% if therfee %}<button type="submit" class="btn btn-xs btn-primary">Save</button>
+        <a class="btn btn-xs btn-default" href="{% if object %}{% url 'flight-airbase-rfeelist' object.tla %}{% else %}{% url 'flight-rfee-list' %}{% endif %}">Cancel</a>
+        <a class="btn btn-xs btn-danger" href="{% url 'flight-airbase-rfee-delete' therfee.airbase.tla therfee.id %}">Delete</a>
+        {% else %}
+        <button type="submit" class="btn btn-xs btn-primary">Save</button>
+        <a class="btn btn-xs btn-default" href="{% if object %}{% url 'flight-airbase-rfeelist' object.tla %}{% else %}{% url 'flight-rfee-list' %}{% endif %}">Cancel</a>
+        {% endif %}</td>
+	</tr>
+	{% csrf_token %}
+</form>
+{% endifnotequal %}
+{% endfor %}
+	</tbody>
+ </table>
+</div>
+{% endblock %}
+
+
+{% block endscripts %}
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="/static/b-3.0.3/js/bootstrap.min.js"></script>
+<script src="/static/tablesorter/jquery.tablesorter.js"></script>
+<script type="text/javascript">
+$(function() {
+    $("#s1").tablesorter({
+	    headers: {
+	      1: { sorter: "uslongDate" } 
+	    }
+	});
+});
+</script>
+<link href='/static/datepicker/datepicker.css' rel='stylesheet' type='text/css'>
+<script src="/static/datepicker/bootstrap-datepicker.js"></script>
+<script>
+	$(function(){
+		$('#id_effectivedate_0').datepicker({
+			format: 'yyyy-mm-dd',
+			autoclose: 'True'
+		});
+	});
+</script>
+<script>
+$(function(){
+    $('.container').tooltip({
+      selector: "a[data-toggle=tooltip]",
+      //placement: 'right'
+    })
+});
+</script>
+{% endblock %}

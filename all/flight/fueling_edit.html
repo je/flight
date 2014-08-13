@@ -1,0 +1,6 @@
+{% extends "flight/fueling_list.html" %}
+
+{% block title %}
+<title>{% if thefueling %}Editing{% else %}Adding{% endif %} a Fueling{% if thefueling %} for Airplane {{ thefueling.airplane.tail }} {{ thefueling.airplane.name }}{% elif object %} for Airplane {{ object.tail }} {{ object.name }}{% else %} for an Airplane{% endif %}</title>
+{% endblock %} 
+

@@ -1,0 +1,40 @@
+{% extends "flight/rfee_list.html" %}
+
+{% block title %}
+<title>Airbase {{ object.tla }} Retardant Price</title>
+{% endblock %} 
+
+{% block content %}
+{% load humanize %}
+<script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script> 
+ <div class="row col-lg-6 col-md-6 col-sm-6">
+ 	<br>
+ 	<form class="well form-horizontal" method="POST" enctype="multipart/form-data" action="{% if therfee %}{% url 'flight-airbase-rfee-delete' therfee.airbase.tla therfee.id %}{% else %}{% if object %}{% url 'flight-airbase-rfee-add' object.tla %}{% else %}{% url 'flight-rfee-add' %}{% endif %}{% endif %}">
+
+    	<legend>{% if therfee %}Deleting Retardant Price{% else %}New Retardant Price{% endif %} {% if object %}at <quiet>Airbase</quiet> {{ object.name }} (<a href="{% url 'flight-airbase-detail' object.tla %}">{{ object.tla }}</a>){% endif %}</legend>
+    	<br>
+    	This is <strong>forever</strong> and <strong>completely irreversible</strong>. Don't do anything you'll regret. Maybe take a walk and come back later?
+		{% for field in form %}
+		{% ifequal field.name "author" %}
+		<input type="hidden">{{ field }}</input>
+		{% else %}
+		<div class="form-group{% if field.errors %} has-error{% endif %}">
+		<label class="control-label" for="{{ field.name }}">{{ field.label }}</label>
+		<div>{{ field }}
+		{% if field.errors %}{% for error in field.errors %}
+			<span class="help-inline">{{ error|escape }}</span>
+		{% endfor %}{% endif %}
+		</div>
+		</div>
+		{% endifequal %}
+		{% endfor %}
+		<br>
+		<br>
+         <div>
+            <button type="submit" class="btn btn-danger"><i class="glyphicon glyphicon-remove glyphicon-white"></i> {% if therfee %}Delete Retardant Price{% endif %}</button>
+            <a class="btn btn-default" href="{% if therfee %}{% url 'flight-airbase-detail' therfee.airbase.tla %}{% else %}{% if object %}{% url 'flight-airbase-detail' object.tla %}{% else %}{% url 'flight-rfee-list' %}{% endif %}{% endif %}">Cancel</a>
+          </div>
+		{% csrf_token %}
+	</form>
+ </div>
+{% endblock %}

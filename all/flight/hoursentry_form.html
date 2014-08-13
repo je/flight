@@ -1,0 +1,15 @@
+{% extends "flight/fairs.html" %}
+
+{% block content %}
+{% load humanize %}
+        <h1 style="margin: 30px">{% if hoursentry %}Edit hours entry{% else %}New hours entry{% endif%}</h1>
+        <div style="margin: 30px">
+        <form method="POST" action="."> 
+        {% csrf_token %}
+        <table>
+        {{ form.as_p }}
+        </table>
+        <input type="submit" class="btn btn-primary" value="Save">
+        </form>
+        </div>
+{% endblock %}

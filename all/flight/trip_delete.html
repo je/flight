@@ -1,0 +1,40 @@
+{% extends "flight/mission_list.html" %}
+
+{% block title %}
+<title>Mission {{ thetrip.mission.airplane.name }} {{ thetrip.mission.incident.name }} {{ thetrip.mission.startdate|date:"Y M d" }}</title>
+{% endblock %}
+
+{% block content %}
+{% load humanize %}
+<script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script> 
+ <div class="row col-lg-6 col-md-6 col-sm-6">
+ 	<br>
+	<form class="well form-horizontal" method="POST" enctype="multipart/form-data" action="/mission/{{ object.airplane.tail }}/{{ object.airplane.name }}/{{ object.startdate|date:"Y/m/d" }}/{{ thetrip.id }}/delete/">
+
+    	<legend>{% if thetrip %}Deleting <quiet>Flight</quiet> {{ thetrip.id }} from <quiet>Mission</quiet> {{ object.airplane.name }} {{ object.incident.name }} {{ object.startdate|date:"Y M d" }}{% else %}{% endif %}</legend>
+    	<br>
+    	This is <strong>forever</strong> and <strong>completely irreversible</strong>. Don't do anything you'll regret. Maybe take a walk and come back later?
+		{% for field in form %}
+		{% ifequal field.name "author" %}
+		<input type="hidden">{{ field }}</input>
+		{% else %}
+		<div class="form-group{% if field.errors %} has-error{% endif %}">
+		<label class="control-label" for="{{ field.name }}">{{ field.label }}</label>
+		<div>{{ field }}
+		{% if field.errors %}{% for error in field.errors %}
+			<span class="help-inline">{{ error|escape }}</span>
+		{% endfor %}{% endif %}
+		</div>
+		</div>
+		{% endifequal %}
+		{% endfor %}
+		<br>
+		<br>
+          <div>
+            <button type="submit" class="btn btn-danger"><i class="glyphicon glyphicon-remove glyphicon-white"></i> {% if object %}Delete Flight{% endif %}</button>
+            <a class="btn btn-default" href="{% if object %}{% url 'flight-mission-detail' object.airplane.tail object.airplane.name object.startdate|date:"Y" object.startdate|date:"m" object.startdate|date:"d" %}{% else %}{% endif %}">Cancel</a>
+          </div>
+		{% csrf_token %}
+	</form>
+ </div>
+{% endblock %}
